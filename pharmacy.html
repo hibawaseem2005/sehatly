@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pharmacy E-shop — Demo UI</title>
+  <style>
+    :root{
+      --brand:#0b76f6;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --bg:#f3f4f6;
+      --glass: rgba(255,255,255,0.6);
+      --danger:#e11d48;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,var(--brand),#3db2ff);color:white;padding:18px 20px;position:sticky;top:0;z-index:40;box-shadow:0 2px 8px rgba(2,6,23,0.08)}
+    .container{max-width:1100px;margin:0 auto}
+    .topbar{display:flex;align-items:center;gap:16px}
+    .logo{font-weight:700;font-size:20px}
+    .search{flex:1;display:flex}
+    .search input{flex:1;padding:10px 12px;border-radius:8px 0 0 8px;border:0;outline:none}
+    .search button{padding:10px 14px;border:0;background:rgba(0,0,0,0.12);border-radius:0 8px 8px 0;cursor:pointer}
+    nav .nav-actions{display:flex;gap:12px;align-items:center}
+    .pill{background:rgba(255,255,255,0.12);padding:8px 10px;border-radius:999px;cursor:pointer}
+    main{padding:22px 20px}
+
+    .layout{display:grid;grid-template-columns:240px 1fr;gap:20px;max-width:1100px;margin:0 auto}
+    /* sidebar */
+    .sidebar{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 1px 4px rgba(2,6,23,0.06)}
+    .category{display:flex;flex-direction:column;gap:8px}
+    .cat-btn{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ee;background:transparent;cursor:pointer;text-align:left}
+
+    /* product area */
+    .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+    .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 1px 6px rgba(2,6,23,0.04);display:flex;flex-direction:column}
+    .card img{width:100%;height:140px;object-fit:contain;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-radius:8px}
+    .card h4{margin:10px 0 6px;font-size:15px}
+    .price-row{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+    .price{font-weight:700}
+    .btn{border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .btn-primary{background:var(--brand);color:white}
+    .btn-ghost{background:transparent;border:1px solid #e6e9ee}
+
+    /* cart */
+    .cart-toggle{position:relative}
+    .cart-count{position:absolute;top:-6px;right:-6px;background:var(--danger);color:white;border-radius:999px;padding:3px 6px;font-size:12px}
+    .cart-drawer{position:fixed;right:18px;top:70px;width:320px;max-height:70vh;background:var(--card);border-radius:12px;padding:14px;box-shadow:0 8px 30px rgba(2,6,23,0.15);overflow:auto;display:none;z-index:60}
+    .cart-item{display:flex;gap:10px;align-items:center;border-bottom:1px dashed #eee;padding:10px 0}
+    .cart-item img{width:56px;height:56px;object-fit:contain;border-radius:6px}
+    .cart-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+
+    /* hero */
+    .hero{background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));border-radius:12px;padding:18px;display:flex;justify-content:space-between;align-items:center;gap:18px}
+    .hero .text h2{margin:0 0 6px;font-size:22px}
+    .hero .text p{margin:0;color:var(--muted)}
+
+    footer{padding:20px;text-align:center;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:880px){
+      .layout{grid-template-columns:1fr;}
+      .sidebar{order:2}
+      .cart-drawer{right:8px;width:92vw}
+      .topbar{gap:8px}
+      .search input{font-size:14px}
+    }
+    /* modal */
+    .modal {
+    display: none; /* hidden by default */
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container topbar">
+      <div class="logo">Sehatly</div>
+      <div class="search">
+        <input id="searchInput" placeholder="Search medicines, cough syrup, vitamins...">
+        <button id="searchBtn">🔍</button>
+      </div>
+      <div class="nav-actions">
+        <div class="pill">Delivery in 30-45 min</div>
+        <div class="pill cart-toggle" id="cartToggle">🛒 Cart <span id="cartCount" class="cart-count" style="display:none">0</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="hero">
+        <div class="text">
+          <h2>Trusted pharmacy. Fast delivery.</h2>
+          <p>Browse medicines, health products and personal care. This is a demo interface — no real orders.</p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="showAll()">Shop All</button>
+          <button class="btn btn-ghost" onclick="applyOffers()">View Offers</button>
+        </div>
+      </div>
+
+      <div style="height:18px"></div>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <h3>Categories</h3>
+          <div class="category">
+            <button class="cat-btn" onclick="filterBy('All')">All</button>
+            <button class="cat-btn" onclick="filterBy('Pain Relief')">Pain Relief</button>
+            <button class="cat-btn" onclick="filterBy('Vitamins')">Vitamins & Supplements</button>
+            <button class="cat-btn" onclick="filterBy('Cough & Cold')">Cough & Cold</button>
+            <button class="cat-btn" onclick="filterBy('Skincare')">Skincare</button>
+            <button class="cat-btn" onclick="filterBy('Diabetes')">Diabetes Care</button>
+          </div>
+
+          <div style="height:12px"></div>
+          <h4>Filters</h4>
+          <label><input type="checkbox" id="prescriptionOnly"> Prescription required</label>
+        </aside>
+
+        <section>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3>Products</h3>
+            <div id="resultsInfo" style="color:var(--muted)"></div>
+          </div>
+
+          <div class="products" id="productList">
+            <!-- product cards rendered by JS -->
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="cartDrawer" class="cart-drawer" aria-hidden="true">
+    <h4>Your Cart</h4>
+    <div id="cartItems"></div>
+    <div class="cart-footer">
+      <div><strong>Total:</strong> <span id="cartTotal">$0.00</span></div>
+      <div>
+        <button class="btn btn-ghost" onclick="clearCart()">Clear</button>
+        <button class="btn btn-primary" onclick="checkout()">Checkout</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- warning modal -->
+  <div id="warningModal" class="modal">
+    <div class="modal-content">
+      <h3>⚠ Drug Interaction Detected</h3>
+      <p id="warningText">Some medicines may clash. Proceed with caution.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeWarning()">Cancel</button>
+        <button class="btn btn-primary" onclick="proceedCheckout()">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © <span id="year"></span> Sehatly — demo UI. Not for real orders.
+  </footer>
+
+    <script>
+    // ---------------------------
+    // Sample Product Data
+    // ---------------------------
+    const products = [
+        {id:1, name:'Paracetamol 500mg (20 tablets)', price:3.50, category:'Pain Relief', img:'https://via.placeholder.com/180x140?text=Paracetamol', prescription:false},
+        {id:2, name:'Cough Syrup 100ml', price:5.25, category:'Cough & Cold', img:'https://via.placeholder.com/180x140?text=Cough+Syrup', prescription:false},
+        {id:3, name:'Vitamin C 1000mg (30)', price:8.00, category:'Vitamins', img:'https://via.placeholder.com/180x140?text=Vitamin+C', prescription:false},
+        {id:4, name:'Insulin Starter Kit', price:25.00, category:'Diabetes', img:'https://via.placeholder.com/180x140?text=Insulin+Kit', prescription:true},
+        {id:5, name:'Moisturizing Cream 50g', price:7.00, category:'Skincare', img:'https://via.placeholder.com/180x140?text=Skincare', prescription:false},
+        {id:6, name:'Aspirin 75mg (30)', price:4.50, category:'Pain Relief', img:'https://via.placeholder.com/180x140?text=Aspirin', prescription:false},
+        {id:7, name:'Antihistamine Tablets', price:6.00, category:'Cough & Cold', img:'https://via.placeholder.com/180x140?text=Antihistamine', prescription:false},
+        {id:8, name:'Multivitamin Gummies', price:9.25, category:'Vitamins', img:'https://via.placeholder.com/180x140?text=Multivitamin', prescription:false},
+        {id:9, name:'Warfarin 5mg (30 tablets)', price:12.00, category:'Blood Thinner', img:'https://via.placeholder.com/180x140?text=Warfarin', prescription:true}
+    ];
+
+    let currentCategory = 'All';
+    let cart = JSON.parse(localStorage.getItem('cart')||'{}');
+
+    // ---------------------------
+    // Helpers
+    // ---------------------------
+    function $(id){return document.getElementById(id)}
+
+    // ---------------------------
+    // Product Rendering & Filtering
+    // ---------------------------
+    function renderProducts(list){
+        const container = $('productList'); container.innerHTML='';
+        if(list.length===0){$('resultsInfo').textContent='No items found';}
+        else{$('resultsInfo').textContent=list.length+ ' items'}
+        list.forEach(p=>{
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `
+            <img src="${p.img}" alt="${p.name}">
+            <h4>${p.name}</h4>
+            <div style="color:var(--muted);font-size:13px">${p.category} ${p.prescription? '• Prescription':''}</div>
+            <div class="price-row">
+            <div class="price">$${p.price.toFixed(2)}</div>
+            <div>
+                <button class="btn btn-ghost" onclick='viewDetails(${p.id})'>View</button>
+                <button class="btn btn-primary" onclick='addToCart(${p.id})'>Add</button>
+            </div>
+            </div>
+        `;
+        container.appendChild(card);
+        })
+    }
+
+    function filterBy(cat){
+        currentCategory = cat;
+        applyFilters();
+    }
+
+    function applyFilters(){
+        const q = $('searchInput').value.trim().toLowerCase();
+        const pres = $('prescriptionOnly').checked;
+        let list = products.filter(p=>{
+        if(currentCategory!=='All' && p.category.indexOf(currentCategory)===-1 && currentCategory!==p.category) return false;
+        if(pres && !p.prescription) return false;
+        if(q && !(p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q))) return false;
+        return true;
+        });
+        renderProducts(list);
+    }
+
+    $('searchBtn').addEventListener('click', applyFilters);
+    $('searchInput').addEventListener('keyup', (e)=>{ if(e.key==='Enter') applyFilters(); });
+    $('prescriptionOnly').addEventListener('change', applyFilters);
+
+    // ---------------------------
+    // Cart Logic
+    // ---------------------------
+    function saveCart(){ localStorage.setItem('cart', JSON.stringify(cart)); updateCartUI(); }
+    function addToCart(id){
+        const p = products.find(x=>x.id===id); if(!p) return;
+        if(p.prescription){alert('⚠️ This product requires a prescription in real stores. (Demo)');}
+        if(cart[id]) cart[id].qty +=1; else cart[id] = {id:p.id, name:p.name, price:p.price, qty:1, img:p.img};
+        saveCart();
+    }
+    function updateCartUI(){
+        const count = Object.values(cart).reduce((s,i)=>s+i.qty,0);
+        const c = $('cartCount'); if(count>0){c.style.display='inline-block'; c.textContent = count;} else c.style.display='none';
+        // render items inside drawer
+        const container = $('cartItems'); container.innerHTML='';
+        let total=0;
+        for(const key in cart){const it = cart[key]; total += it.price * it.qty;
+        const row = document.createElement('div'); row.className='cart-item';
+        row.innerHTML = `<img src="${it.img}" alt="${it.name}"><div style="flex:1"><div style="font-size:14px">${it.name}</div><div style="color:var(--muted);font-size:13px">$${it.price.toFixed(2)} x ${it.qty}</div></div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn btn-ghost" onclick='decreaseQty(${it.id})'>-</button><button class="btn btn-primary" onclick='increaseQty(${it.id})'>+</button></div>`;
+        container.appendChild(row);
+        }
+        $('cartTotal').textContent = '$' + total.toFixed(2);
+    }
+    // --- Drug interaction modal logic ---
+    function showWarning(message) {
+    $('warningText').textContent = message;
+    $('warningModal').style.display = 'block';
+    }
+
+    function closeWarning() {
+    $('warningModal').style.display = 'none';
+    }
+
+    function proceedCheckout() {
+    // actually checkout now
+    const name = prompt('Enter your name for the demo checkout:');
+    if(!name) return;
+    alert('Thank you, '+name+". This is a demo checkout. No real payment processed.");
+    cart = {};
+    saveCart();
+    closeCart();
+    closeWarning();
+    }
+
+
+    function increaseQty(id){ cart[id].qty+=1; saveCart(); }
+    function decreaseQty(id){ cart[id].qty-=1; if(cart[id].qty<=0) delete cart[id]; saveCart(); }
+    function clearCart(){ if(confirm('Clear cart?')){cart={}; saveCart(); closeCart();} }
+
+    // Cart drawer toggle
+    const cartToggle = $('cartToggle'); const cartDrawer = $('cartDrawer');
+    cartToggle.addEventListener('click', ()=>{ cartDrawer.style.display==='block'? closeCart(): openCart(); });
+    function openCart(){ cartDrawer.style.display='block'; cartDrawer.setAttribute('aria-hidden','false'); updateCartUI(); }
+    function closeCart(){ cartDrawer.style.display='none'; cartDrawer.setAttribute('aria-hidden','true'); }
+
+    // ---------------------------
+    // Drug Interaction Checker ⚡💊
+    // ---------------------------
+    const interactionDB = {
+        "paracetamol+warfarin": "⚠️ Warning: Paracetamol and Warfarin together may cause liver complications.",
+        "aspirin+warfarin": "⚠️ Warning: Aspirin and Warfarin may increase bleeding risk.",
+        "insulin+aspirin": "⚠️ Warning: Insulin and Aspirin may lower blood sugar too much."
+    };
+
+    function normalize(str){ return str.trim().toLowerCase(); }
+
+    function checkInteractionsInCart(){
+        const items = Object.values(cart);
+        let warnings = [];
+        for(let i=0; i<items.length; i++){
+        for(let j=i+1; j<items.length; j++){
+            const m1 = normalize(items[i].name.split(" ")[0]);
+            const m2 = normalize(items[j].name.split(" ")[0]);
+            const key1 = m1+"+"+m2;
+            const key2 = m2+"+"+m1;
+            if(interactionDB[key1]) warnings.push(interactionDB[key1]);
+            else if(interactionDB[key2]) warnings.push(interactionDB[key2]);
+        }
+        }
+        return warnings;
+    }
+
+    // ---------------------------
+    // Checkout
+    // ---------------------------
+    function checkout() {
+        if(Object.keys(cart).length===0){
+            alert('Cart is empty');
+            return;
+        }
+
+        // check interactions
+        const interactionMsg = checkInteractions();
+        if(interactionMsg){
+            showWarning(interactionMsg);  // show modal
+            return;
+        }
+
+        // if no interactions → normal checkout
+        const name = prompt('Enter your name for the demo checkout:');
+        if(!name) return;
+        alert('Thank you, '+name+". This is a demo checkout. No real payment processed.");
+        cart = {};
+        saveCart();
+        closeCart();
+    }
+
+    const interactions = {
+    "paracetamol+warfarin": "⚠ Warning: Paracetamol and Warfarin together may cause liver complications.",
+    "aspirin+warfarin": "⚠ Warning: Aspirin and Warfarin together may increase bleeding risk."
+    };
+
+    function checkInteractions(){
+    const items = Object.values(cart).map(i=>i.name.toLowerCase());
+    for(const pair in interactions){
+        const [drug1, drug2] = pair.split('+');
+        if(items.some(n=>n.includes(drug1)) && items.some(n=>n.includes(drug2))){
+        return interactions[pair];
+        }
+    }
+    return null;
+    }
+
+
+    // ---------------------------
+    // Other Features
+    // ---------------------------
+    function viewDetails(id){
+        const p = products.find(x=>x.id===id); if(!p) return;
+        alert(p.name + '\nPrice: $'+p.price.toFixed(2)+ (p.prescription? '\nRequires prescription':''));
+    }
+    function showAll(){ currentCategory='All'; $('searchInput').value=''; applyFilters(); }
+    function applyOffers(){ alert('💡 Demo offers: 10% off on vitamins.'); }
+
+    // ---------------------------
+    // Init
+    // ---------------------------
+    document.addEventListener('DOMContentLoaded', ()=>{
+        $('year').textContent = new Date().getFullYear();
+        renderProducts(products);
+        updateCartUI();
+    });
+    </script>
+
+
+</body>
+</html>
