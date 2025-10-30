@@ -190,9 +190,8 @@
   </footer>
 
     <script>
-    // ---------------------------
+
     // Sample Product Data
-    // ---------------------------
     const products = [
         {id:1, name:'Paracetamol 500mg (20 tablets)', price:3.50, category:'Pain Relief', img:'https://via.placeholder.com/180x140?text=Paracetamol', prescription:false},
         {id:2, name:'Cough Syrup 100ml', price:5.25, category:'Cough & Cold', img:'https://via.placeholder.com/180x140?text=Cough+Syrup', prescription:false},
@@ -208,14 +207,10 @@
     let currentCategory = 'All';
     let cart = JSON.parse(localStorage.getItem('cart')||'{}');
 
-    // ---------------------------
     // Helpers
-    // ---------------------------
     function $(id){return document.getElementById(id)}
 
-    // ---------------------------
     // Product Rendering & Filtering
-    // ---------------------------
     function renderProducts(list){
         const container = $('productList'); container.innerHTML='';
         if(list.length===0){$('resultsInfo').textContent='No items found';}
@@ -259,9 +254,7 @@
     $('searchInput').addEventListener('keyup', (e)=>{ if(e.key==='Enter') applyFilters(); });
     $('prescriptionOnly').addEventListener('change', applyFilters);
 
-    // ---------------------------
     // Cart Logic
-    // ---------------------------
     function saveCart(){ localStorage.setItem('cart', JSON.stringify(cart)); updateCartUI(); }
     function addToCart(id){
         const p = products.find(x=>x.id===id); if(!p) return;
