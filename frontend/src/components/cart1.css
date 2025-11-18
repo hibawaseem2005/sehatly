@@ -1,0 +1,164 @@
+/* ============================
+  Clean Medical Dashboard — Pharmacy
+  Stepper layout, responsive, teal/blue theme
+   ============================ */
+
+:root{
+  --teal:#0aa07b;
+  --teal-dark:#078a63;
+  --blue:#0b76f6;
+  --bg:#f7fbfb;
+  --card:#ffffff;
+  --muted:#6b7280;
+  --glass: rgba(11,118,246,0.06);
+  --shadow: rgba(3,18,26,0.06);
+  --success:#0aae68;
+}
+
+/* Base */
+*{box-sizing:border-box}
+body{background:var(--bg);font-family:Inter, "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;color:#0f1724}
+
+/* Layout */
+.checkout-page.stepper-page{padding:26px 12px}
+.checkout-container{
+  max-width:1200px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns: 1fr 340px;
+  gap:22px;
+  align-items:start;
+}
+
+/* Left panel (main) */
+.left-panel{
+  background:transparent;
+}
+
+/* Stepper header */
+.stepper-header{
+  display:flex;
+  gap:12px;
+  margin-bottom:18px;
+  align-items:center;
+}
+.step{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid transparent;transition:all .18s ease}
+.step .step-num{width:34px;height:34px;border-radius:10px;background:#f0faf8;color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:700}
+.step .step-label{font-weight:600;color:#0b1220}
+.step:hover{transform:translateY(-3px)}
+.step.active{background:linear-gradient(90deg, rgba(10,160,123,0.08), rgba(11,118,246,0.04));border:1px solid rgba(10,160,123,0.14)}
+
+/* Panels */
+.step-panel{
+  background:var(--card);
+  padding:18px;
+  border-radius:14px;
+  box-shadow: 0 6px 18px var(--shadow);
+  margin-bottom:16px;
+}
+.panel-title{margin:0 0 12px 0;color:var(--teal-dark);font-size:20px}
+
+/* Medicine cards grid (step 1) */
+.cards-grid{display:grid;grid-template-columns:repeat(1,1fr);gap:12px}
+@media(min-width:720px){ .cards-grid{grid-template-columns:repeat(2,1fr)} }
+
+.med-card{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  background:linear-gradient(180deg,#fff,#fcfffe);
+  padding:12px;border-radius:12px;border:1px solid #eef6f2;transition:all .18s ease;
+}
+.med-card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(3,18,26,0.06)}
+.med-thumb{width:70px;height:70px;background:linear-gradient(120deg,#e9fff5,#e6f3ff);border-radius:10px;flex:0 0 70px}
+.med-main{flex:1}
+.med-title{font-weight:700}
+.med-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.med-meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.price{font-weight:700;color:#0b1220}
+.qty-controls{display:flex;align-items:center;gap:8px;background:#f6fffb;padding:6px;border-radius:8px;border:1px solid #e6f7ef}
+.qty-btn{width:34px;height:34px;border-radius:8px;border:none;background:var(--teal);color:white;font-size:18px;cursor:pointer;transition:transform .12s}
+.qty-btn:hover{transform:scale(1.06)}
+.qty-value{min-width:28px;text-align:center;font-weight:600}
+
+/* small actions */
+.med-actions{display:flex;align-items:center;gap:8px}
+.remove-small{background:transparent;border:none;color:#dd5860;cursor:pointer;font-weight:600}
+
+/* step actions */
+.step-actions{display:flex;justify-content:space-between;gap:12px;margin-top:16px}
+.step-actions .primary{background:var(--teal);color:white;padding:10px 18px;border-radius:10px;border:none;cursor:pointer;box-shadow:0 6px 18px rgba(7,138,99,0.12)}
+.step-actions .secondary{background:transparent;border:1px solid #e6f0ef;padding:10px 14px;border-radius:10px;cursor:pointer}
+
+/* Delivery form */
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.form-grid label.full{grid-column:1/-1}
+.form-grid input, .form-grid textarea, .form-grid select{width:100%;padding:10px;border-radius:8px;border:1px solid #e5ece8;background:#fbfffe}
+.form-grid textarea{min-height:80px;resize:vertical}
+.form-grid .checkbox{display:flex;align-items:center;gap:10px}
+
+/* Prescription */
+.pres-upload input[type="file"]{display:block}
+.pres-preview{display:flex;align-items:center;gap:10px;margin-top:8px}
+.pres-preview .link{background:none;border:none;color:var(--blue);cursor:pointer}
+
+/* Payment */
+.payment-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.radio-grid{display:flex;flex-direction:column;gap:10px}
+.radio-card{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;background:#f8fffb;border:1px solid transparent;transition:all .16s}
+.radio-card input[type=radio]{transform:scale(1.2)}
+.radio-card .radio-body{display:flex;flex-direction:column}
+.radio-card .radio-title{font-weight:700}
+.radio-card .radio-sub{font-size:13px;color:var(--muted)}
+.radio-card:hover{transform:translateY(-4px);border-color:rgba(10,160,123,0.12)}
+.radio-card.checked{border-color:var(--teal);box-shadow:0 6px 18px rgba(10,160,123,0.06)}
+
+/* Promo */
+.promo-box{display:flex;gap:8px;align-items:center}
+.promo-box input{flex:1;padding:10px;border-radius:8px;border:1px solid #e5ece8}
+.promo-box button{padding:10px;border-radius:8px;border:none;background:var(--blue);color:white;cursor:pointer}
+.applied{color:var(--success)}
+
+/* Summary panel */
+.summary-panel{display:grid;grid-template-columns:1fr 320px;gap:14px}
+.summary-left{background:#fff;padding:12px;border-radius:10px;border:1px solid #eef6f2}
+.summary-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #eef6f2}
+.summary-item-right{font-weight:700}
+.summary-right{background:#fff;padding:12px;border-radius:10px;border:1px solid #eef6f2}
+.summary-row{display:flex;justify-content:space-between;padding:8px 0}
+.summary-row.total{font-weight:800;font-size:18px;color:#081426}
+
+/* Right panel mini cart */
+.right-panel{position:sticky;top:20px;padding:14px;background:var(--card);border-radius:12px;box-shadow:0 6px 20px var(--shadow);height:max-content}
+.mini-header{display:flex;justify-content:space-between;align-items:center}
+.mini-list{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.mini-item{display:flex;gap:10px;align-items:center}
+.mini-thumb{width:48px;height:48px;border-radius:8px;background:linear-gradient(120deg,#e9fff5,#e6f3ff)}
+.mini-info{flex:1}
+.mini-name{font-weight:700}
+.mini-price{font-weight:700}
+.mini-totals{margin-top:12px;background:#f8fffb;padding:10px;border-radius:8px;border:1px solid #eef6f2}
+.mini-row{display:flex;justify-content:space-between;padding:6px 0}
+.mini-row.total{font-weight:800}
+
+/* Mini actions */
+.mini-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.mini-actions .full{width:100%}
+
+/* Buttons */
+.primary{background:var(--teal);color:white;padding:10px 14px;border-radius:10px;border:none;cursor:pointer}
+.secondary{background:transparent;border:1px solid #e6f0ef;padding:10px 12px;border-radius:10px;cursor:pointer}
+
+/* Muted */
+.muted{color:var(--muted);font-size:13px}
+
+/* Empty */
+.cart-empty{padding:40px;text-align:center;background:#fff;border-radius:12px;max-width:600px;margin:40px auto}
+
+/* Responsive */
+@media(max-width:1000px){
+  .checkout-container{grid-template-columns:1fr; padding:0 8px}
+  .summary-panel{grid-template-columns:1fr}
+  .right-panel{position:relative;top:auto}
+  .cards-grid{grid-template-columns:1fr}
+}

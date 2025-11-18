@@ -1,46 +1,67 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  // Load cart from localStorage on first render
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem("sehatly_cart");
+    return saved ? JSON.parse(saved) : [];
+  });
 
+  // Save cart to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("sehatly_cart", JSON.stringify(cart));
+  }, [cart]);
+
+  // ---------------- ADD TO CART (same functionality) ----------------
   const addToCart = (medicine) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item._id === medicine._id);
 
       if (existingItem) {
-        // If already in cart, increase quantity
         return prevCart.map((item) =>
           item._id === medicine._id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        // Add new item
         return [...prevCart, { ...medicine, quantity: 1 }];
       }
     });
   };
 
+  // ---------------- REMOVE (same) ----------------
   const removeFromCart = (id) => {
     setCart((prevCart) =>
-      prevCart.filter(
-        (item) => item._id !== id && item.id !== id
-      )
+      prevCart.filter((item) => item._id !== id && item.id !== id)
     );
   };
 
-  const clearCart = () => setCart([]);
+  // ---------------- CLEAR CART (same) ----------------
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem("sehatly_cart"); // also clear saved version
+  };
 
+  // ---------------- TOTAL PRICE (same) ----------------
   const totalPrice = cart.reduce(
     (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
     0
   );
+  const updateQuantity = (id, newQty) => {
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item._id === id
+          ? { ...item, quantity: newQty > 0 ? newQty : 1 }
+          : item
+      )
+    );
+  };
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, clearCart, totalPrice }}
+      value={{ cart, addToCart, removeFromCart, clearCart, totalPrice, updateQuantity }}
     >
       {children}
     </CartContext.Provider>

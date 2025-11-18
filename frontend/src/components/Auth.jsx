@@ -1,10 +1,14 @@
 // src/components/Auth.js
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import "./Auth.css";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   // Login fields
   const [loginEmail, setLoginEmail] = useState("");
@@ -24,10 +28,10 @@ const Auth = () => {
     setShowPassword(false);
 
     // Clear all fields
-    setLoginEmail("");
+    setLoginEmail(""); 
     setLoginPassword("");
-    setSignupName("");
-    setSignupEmail("");
+    setSignupName(""); 
+    setSignupEmail(""); 
     setSignupPassword("");
   };
 
@@ -47,8 +51,9 @@ const Auth = () => {
       const data = await res.json();
       if (res.ok) {
         setMessage("✅ Signup successful! You can now login.");
-        setSignupName("");
-        setSignupEmail("");
+        setIsLogin(true);
+        setSignupName(""); 
+        setSignupEmail(""); 
         setSignupPassword("");
       } else {
         setMessage(data.message || "❌ Signup failed.");
@@ -67,10 +72,16 @@ const Auth = () => {
         email: loginEmail,
         password: loginPassword,
       });
-      localStorage.setItem("token", res.data.token);
-      setMessage("✅ Login successful!");
-      setLoginEmail("");
-      setLoginPassword("");
+
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userEmail", loginEmail);
+        login(loginEmail, res.data.token);
+        setMessage("✅ Login successful!");
+        setLoginEmail(""); 
+        setLoginPassword("");
+        navigate("/");
+      }
     } catch (err) {
       setMessage(err.response?.data?.message || "❌ Login failed");
       console.error(err);
@@ -80,47 +91,38 @@ const Auth = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
+        {/* Hidden dummy form to prevent browser autofill */}
+        <form style={{ display: "none" }}>
+          <input type="email" name="dummy_email" autoComplete="username" />
+          <input type="password" name="dummy_password" autoComplete="new-password" />
+        </form>
+
         <div className="tabs">
-          <button
-            className={isLogin ? "active-tab" : ""}
-            onClick={toggleForm}
-          >
-            Login
-          </button>
-          <button
-            className={!isLogin ? "active-tab" : ""}
-            onClick={toggleForm}
-          >
-            Signup
-          </button>
+          <button className={isLogin ? "active-tab" : ""} onClick={toggleForm}>Login</button>
+          <button className={!isLogin ? "active-tab" : ""} onClick={toggleForm}>Signup</button>
         </div>
 
         {message && (
-          <p
-            className={message.includes("successful") ? "success-msg" : "error-msg"}
-          >
+          <p className={message.includes("successful") ? "success-msg" : "error-msg"}>
             {message}
           </p>
         )}
 
         {isLogin ? (
-          <form
-            key="login-form"
-            onSubmit={handleLogin}
-            className="auth-form"
-            autoComplete="off"
-          >
+          <form onSubmit={handleLogin} className="auth-form" autoComplete="off">
             <input
               type="email"
+              name="login_email_unique"
               placeholder="Email"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
               required
               autoComplete="off"
-            /><br />
+            />
             <div className="password-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
+                name="login_password_unique"
                 placeholder="Password"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
@@ -134,35 +136,33 @@ const Auth = () => {
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
-            </div><br />
+            </div>
             <button type="submit" className="auth-btn">Login</button>
           </form>
         ) : (
-          <form
-            key="signup-form"
-            onSubmit={handleSignup}
-            className="auth-form"
-            autoComplete="off"
-          >
+          <form onSubmit={handleSignup} className="auth-form" autoComplete="off">
             <input
               type="text"
+              name="signup_name_unique"
               placeholder="Full Name"
               value={signupName}
               onChange={(e) => setSignupName(e.target.value)}
               required
               autoComplete="off"
-            /><br />
+            />
             <input
               type="email"
+              name="signup_email_unique"
               placeholder="Email"
               value={signupEmail}
               onChange={(e) => setSignupEmail(e.target.value)}
               required
               autoComplete="off"
-            /><br />
+            />
             <div className="password-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
+                name="signup_password_unique"
                 placeholder="Password"
                 value={signupPassword}
                 onChange={(e) => setSignupPassword(e.target.value)}
@@ -176,17 +176,22 @@ const Auth = () => {
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
-            </div><br />
+            </div>
             <button type="submit" className="auth-btn">Signup</button>
           </form>
         )}
 
         <p className="toggle-link">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span onClick={toggleForm}>
-            {isLogin ? "Signup here" : "Login here"}
-          </span>
+          <span onClick={toggleForm}>{isLogin ? "Signup here" : "Login here"}</span>
         </p>
+
+        <div className="auth-footer">
+          Connect with Sehatly: 
+          <a href="#">Facebook</a> | 
+          <a href="#">Twitter</a> | 
+          <a href="#">Instagram</a>
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -28,27 +29,47 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// ✅ User login
+router.post("/admin", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(401).json({ message: "Invalid credentials" });
+
+    if (user.role !== "admin")
+      return res.status(403).json({ message: "You are NOT an admin!" });
+
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    res.json({ message: "Admin login successful", token, role: user.role });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
-    if (!user)
-      return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword)
-      return res.status(401).json({ message: "Invalid credentials" });
+    if (!validPassword) return res.status(401).json({ message: "Invalid credentials" });
 
-    // create JWT token
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    // No role check here, all users can login
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    res.json({ message: "Login successful", token, role: user.role });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
-    res.json({ message: "Login successful", token });
+// Delete account
+router.delete("/delete", verifyToken, async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.user.userId);
+    res.json({ message: "User deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

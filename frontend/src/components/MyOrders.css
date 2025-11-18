@@ -1,0 +1,123 @@
+:root {
+  --primary: #00bfa5;
+  --accent: #00d4b3;
+  --bg: #f5faff;
+  --card-bg: #e0f7f4;
+  --shadow-light: rgba(0,0,0,0.08);
+  --shadow-dark: rgba(0,0,0,0.15);
+  --text: #024d46;
+  --subtext: #06635b;
+  --status-pending: #ffb74d;
+  --status-completed: #4caf50;
+  --status-cancelled: #f44336;
+}
+
+.orders-page {
+  padding: 2rem 4rem;
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+.page-title {
+  font-size: 2rem;
+  color: var(--text);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--subtext);
+  font-size: 1rem;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.order-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 8px 8px 16px var(--shadow-light), -8px -8px 16px white;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.order-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px rgba(255,255,255,0.7);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.order-status {
+  padding: 0.2rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: white;
+}
+
+.order-status.pending { background: var(--status-pending); }
+.order-status.completed { background: var(--status-completed); }
+.order-status.cancelled { background: var(--status-cancelled); }
+
+.order-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  color: var(--subtext);
+}
+
+.order-items {
+  margin-top: 1rem;
+}
+
+.items-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 4px 4px 12px rgba(0,0,0,0.08);
+}
+
+.item-card img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.item-qty-price {
+  font-size: 0.85rem;
+  color: var(--subtext);
+}
