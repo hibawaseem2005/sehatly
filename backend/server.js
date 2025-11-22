@@ -1,13 +1,12 @@
-import express from "express"; //handles http requests
-import mongoose from "mongoose"; //connection w mongo
-import dotenv from "dotenv"; //env file se vars ko load krta
-import cors from "cors"; //allows my server to handle requests from diff origins like frontend is using 3000 and db is using 5000
-import fetch from "node-fetch"; //reqs for external http APIs jaise k fda wagaira
-import Medicine from "./models/medicine.js"; //imports medicine model
-import authRoutes from "./routes/authRoutes.js"; // handles login/signup routes
-import paymentRoutes from "./routes/paymentRoutes.js"; //payment rel shi
+import express from "express"; 
+import mongoose from "mongoose"; 
+import dotenv from "dotenv"; 
+import cors from "cors"; 
+import fetch from "node-fetch"; 
+import Medicine from "./models/medicine.js"; 
+import authRoutes from "./routes/authRoutes.js"; 
+import paymentRoutes from "./routes/paymentRoutes.js"; 
 import orderRoutes from "./routes/orderRoutes.js";
-import vendorRoutes from "./routes/vendorRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import medicineRoutes from "./routes/medicineRoutes.js";
 import { verifyToken } from "./middleware/authMiddleware.js";
@@ -17,34 +16,46 @@ import { fileURLToPath } from "url";
 import adminAnalyticsRoutes from "./routes/adminAnalyticsRoutes.js";
 import http from "http";
 import { Server } from "socket.io";
+import vendorRoutes from "./routes/vendorRoutes.js";
+import cookieParser from "cookie-parser";
+import reminderRoutes from "./routes/reminderRoutes.js";
 
-
-
-const router = express.Router();
 dotenv.config();
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors());
+// ✅ CORS setup to allow credentials from frontend
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// ✅ Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// ✅ MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => console.error("❌ MongoDB connection error:", err));
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // ✅ Test route
 app.get("/", (req, res) => {
   res.send("MongoDB is connected successfully!");
 });
-router.post("/add", verifyToken, async (req, res) => {
+
+// ================== ROUTES ================== //
+
+// Add medicine
+app.post("/add", verifyToken, async (req, res) => {
   try {
     const { name, brand, category_id, price, stockQuantity, req_prescription } = req.body;
-    const vendorId = req.user.userId; // taken from JWT
+    const vendorId = req.user.userId;
 
     const medicine = new Medicine({
       name,
@@ -64,8 +75,9 @@ router.post("/add", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-// ✅ Get all medicines added by vendor
-router.get("/my-medicines", verifyToken, async (req, res) => {
+
+// Get medicines added by vendor
+app.get("/my-medicines", verifyToken, async (req, res) => {
   try {
     const vendorId = req.user.userId;
     const medicines = await Medicine.find({ vendorId });
@@ -75,7 +87,7 @@ router.get("/my-medicines", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Fetch all medicines from your database
+// Fetch all medicines
 app.get("/medicines", async (req, res) => {
   try {
     const medicines = await Medicine.find();
@@ -86,7 +98,7 @@ app.get("/medicines", async (req, res) => {
   }
 });
 
-// ✅ Sync medicines from openFDA API (Auto-Update old ones)
+// Sync medicines from openFDA
 app.get("/api/sync-medicines", async (req, res) => {
   try {
     const queries = [
@@ -99,7 +111,7 @@ app.get("/api/sync-medicines", async (req, res) => {
       "purpose:hypertension",
       "purpose:asthma",
       "purpose:antifungal",
-      "purpose:vaccine"
+      "purpose:vaccine",
     ];
 
     let added = 0;
@@ -111,14 +123,14 @@ app.get("/api/sync-medicines", async (req, res) => {
 
       if (!data.results) continue;
 
-      const medicines = data.results.map(item => ({
+      const medicines = data.results.map((item) => ({
         name: item.openfda?.generic_name?.[0] || "Unknown",
         brand: item.openfda?.brand_name?.[0] || "Generic",
         description: item.description?.[0] || "No description available",
         category_id: categoryMap[query],
         price: Math.floor(Math.random() * 1000) + 100,
         stockQuantity: Math.floor(Math.random() * 50) + 10,
-        req_prescription: Math.random() > 0.5
+        req_prescription: Math.random() > 0.5,
       }));
 
       for (const med of medicines) {
@@ -136,35 +148,43 @@ app.get("/api/sync-medicines", async (req, res) => {
     res.json({
       message: "✅ Medicines synced successfully!",
       added,
-      updated
+      updated,
     });
-
   } catch (err) {
     console.error("❌ Error syncing medicines:", err);
     res.status(500).json({ message: err.message });
   }
 });
+
+// Cart route
 app.get("/cart", verifyToken, async (req, res) => {
-  // Only logged-in users can reach here
   const userId = req.user.userId;
-  // Fetch cart info from DB for this user
   res.json({ message: `Cart data for user ${userId}` });
 });
 
+// Use your routes
 app.use("/api/auth", authRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("api/vendors", vendorRoutes);
-app.use("api/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/medicines", medicineRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
 app.use("/api/admin", adminMetricsRoutes);
+app.use("/api/vendor", vendorRoutes);
+app.use(cookieParser());
+app.use("/api/reminders", reminderRoutes);
+// ================== SOCKET.IO ================== //
 const PORT = process.env.PORT || 5000;
-const server = http.createServer(app); // create HTTP server
+const server = http.createServer(app);
+
 const io = new Server(server, {
-  cors: { origin: "*" } // allow frontend origin
+  cors: {
+    origin: "http://localhost:3000", // frontend origin
+    credentials: true,
+  },
 });
+
 io.on("connection", (socket) => {
   console.log("✅ Admin dashboard connected:", socket.id);
 
@@ -173,7 +193,9 @@ io.on("connection", (socket) => {
   });
 });
 
+// Export io for dashboard to use
+export { io };
+
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-export default router;
-export { io };
+export default app;

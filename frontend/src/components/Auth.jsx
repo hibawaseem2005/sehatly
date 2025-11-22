@@ -1,7 +1,7 @@
 // src/components/Auth.js
 import React, { useState, useContext } from "react";
 import axios from "axios";
-import "./Auth.css";
+import "../designs/Auth.css";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -96,7 +96,7 @@ const Auth = () => {
           <input type="email" name="dummy_email" autoComplete="username" />
           <input type="password" name="dummy_password" autoComplete="new-password" />
         </form>
-
+        <h1 className="welcome-msg">Welcome to Sehatly</h1>
         <div className="tabs">
           <button className={isLogin ? "active-tab" : ""} onClick={toggleForm}>Login</button>
           <button className={!isLogin ? "active-tab" : ""} onClick={toggleForm}>Signup</button>

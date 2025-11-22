@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import styles from "./AdminLogin.module.css";
+import styles from "../designs/AdminLogin.module.css";
 
 const SehatlyAdminLogin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(""); // starts empty
+  const [password, setPassword] = useState(""); // starts empty
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -20,13 +20,17 @@ const SehatlyAdminLogin = () => {
       });
 
       if (res.data.role !== "admin") {
+        setPassword(""); // clear password on role mismatch
         return setError("You are NOT an admin!");
       }
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("adminToken", res.data.token);
+      setEmail(""); // clear email
+      setPassword(""); // clear password
       navigate("/admin/dashboard");
     } catch (err) {
       setError("Login failed. Check your credentials.");
+      setPassword(""); // clear password after failed login
     }
   };
 
@@ -38,7 +42,7 @@ const SehatlyAdminLogin = () => {
 
         {error && <div className={styles.alert}>{error}</div>}
 
-        <form onSubmit={handleAdminLogin} className={styles.form}>
+        <form onSubmit={handleAdminLogin} className={styles.form} autoComplete="off">
           <input
             className={styles.inputField}
             type="email"
@@ -46,6 +50,7 @@ const SehatlyAdminLogin = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="off"
           />
           <input
             className={styles.inputField}
@@ -54,6 +59,7 @@ const SehatlyAdminLogin = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="new-password"
           />
 
           <div className={styles.optionsRow}>

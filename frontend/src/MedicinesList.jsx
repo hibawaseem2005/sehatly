@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./MedicinesShop.css";
 import { CartContext } from "./context/CartContext";
+import { useNavigate } from "react-router-dom";
+
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
@@ -12,6 +14,10 @@ const MedicinesList = () => {
   const [prescriptionOnly, setPrescriptionOnly] = useState(false);
   const [category, setCategory] = useState("All");
   const { addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
 
   const categoryMap = {
     All: null,
@@ -57,17 +63,21 @@ const MedicinesList = () => {
   }, []);
 
   const filtered = medicines
-    .filter((med) => med.name.toLowerCase().includes(search.toLowerCase()))
-    .filter((med) => (prescriptionOnly ? med.req_prescription : true))
+    .filter((med) => med.name.toLowerCase().includes(search.toLowerCase())) //search filter ; this is required bcz searching is case sensitive
+    .filter((med) => (prescriptionOnly ? med.req_prescription : true))// if checkbox is checked, filter for prescription meds only
     .filter((med) => {
       const selectedCatId = categoryMap[category];
       if (!selectedCatId) return true;
       return med.category_id?.toString() === selectedCatId;
-    });
+    });//If category = All → show everything, Else compare medicine category_id with selectedCatId
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = filtered.slice(indexOfFirst, indexOfLast);
 
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const handleAddToCart = (med) => {
     addToCart({
-      _id: med._id || med.id || Date.now().toString(),
+      _id: med._id || med.id || Date.now().toString(), //display any one of these -> the correct one 
       name: med.name,
       price: Number(med.price),
       brand: med.brand,
@@ -100,7 +110,6 @@ const MedicinesList = () => {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-left">
-          <p className="eyebrow">SPECIAL OFFERS</p>
           <h1 className="hero-title">
             Your Medication <span className="accent">Now Made Easy</span>
           </h1>
@@ -114,6 +123,7 @@ const MedicinesList = () => {
             Shop Now
           </button>
         </div>
+        
 
         <div className="hero-right">
           <Slider {...carouselSettings} className="hero-slider">
@@ -125,7 +135,46 @@ const MedicinesList = () => {
           </Slider>
         </div>
       </section>
+      <section className="quick-links-section">
+          <nav className="quick-links">
+            <ul className="quick-links-list">
+              <li>
+                <a 
+                  href="/about" 
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent default anchor behavior
+                    navigate("/about"); // Navigate to About page
+                  }}
+                >
+                  About
+                </a>
+              </li>
 
+              <li>
+                <a 
+                  href="/contact" 
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent default anchor behavior
+                    navigate("/contact"); // Navigate to Contact page
+                  }}
+                >
+                  Contact
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="/work-with-sehatly" 
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent default anchor behavior
+                    navigate("/work-with-sehatly"); // Navigate to Work With Sehatly page
+                  }}
+                >
+                  Work With Sehatly
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </section>
 
       {/* Category Pills */}
       <section className="category-strip">
@@ -171,7 +220,7 @@ const MedicinesList = () => {
             <span className="count-badge">{filtered.length} items</span>
           </div>
           <div className="products-grid">
-            {filtered.map((med) => (
+           {currentItems.map((med) => (
               <article key={med._id || med.id} className="product-card">
                 {/* <img src={med.image} alt={med.name} className="product-img"/> */}
                 <div className="card-body">
@@ -188,6 +237,17 @@ const MedicinesList = () => {
             ))}
           </div>
         </main>
+      </div>
+      <div className="pagination">
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i + 1)}
+            className={currentPage === i + 1 ? "active-page" : ""}
+          >
+            {i + 1}
+          </button>
+        ))}
       </div>
 
       {/* Footer */}

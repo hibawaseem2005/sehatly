@@ -8,4 +8,5 @@ const orderDetailsSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
 });
 
+
 export default mongoose.model("OrderDetail", orderDetailsSchema);

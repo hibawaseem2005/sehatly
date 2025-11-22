@@ -1,72 +1,80 @@
-import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import "./VendorLogin.css";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import axios from "axios";
+import "../designs/VendorLogin.css"; // Teal-Blue gradient CSS
 
-const VendorLogin = () => {
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
+export default function VendorLogin() {
+  // Form state starts empty to avoid pre-filled values
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
 
-  const handleLogin = async (e) => {
+  // Handle form submit
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/vendor/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const { email, password } = form;
+      const res = await axios.post("http://localhost:5000/api/vendor/login", { email, password });
 
-      const data = await res.json();
-
-      if (res.ok && data.token) {
-        // Save token
-        localStorage.setItem("vendorToken", data.token);
-        localStorage.setItem("vendorEmail", email);
-
-        login(email, data.token); // update AuthContext
-        navigate("/vendor/add-medicine"); // redirect to AddMedicine page
-      } else {
-        setMessage(data.message || "Login failed");
+      if (res.data.success) {
+        localStorage.setItem("vendorToken", res.data.token);
+        alert("✅ Login successful!");
+        // Reset form after successful login
+        setForm({ email: "", password: "" });
+        window.location.href = "/vendor/dashboard";
       }
     } catch (err) {
       console.error(err);
-      setMessage("Something went wrong!");
+      alert(err.response?.data?.message || "Invalid credentials!");
+      // Reset password field only
+      setForm({ ...form, password: "" });
     }
+    setLoading(false);
   };
 
   return (
     <div className="vendor-login-page">
-      <div className="login-card">
-        <h2>Vendor Login</h2>
-        {message && <p className="error-msg">{message}</p>}
-        <form onSubmit={handleLogin}>
+      <motion.div
+        className="login-card"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <h2 className="login-title">Vendor Login</h2>
+        <form
+          className="login-form"
+          onSubmit={handleSubmit}
+          autoComplete="off" // Prevent browser autofill
+        >
           <input
             type="email"
+            name="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={form.email}
+            onChange={handleChange}
             required
             autoComplete="off"
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={form.password}
+            onChange={handleChange}
             required
-            autoComplete="off"
+            autoComplete="new-password"
           />
-          <button type="submit" className="login-btn">Login</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
-};
-
-export default VendorLogin;
+}

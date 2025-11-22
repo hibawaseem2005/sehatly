@@ -3,90 +3,99 @@ import React, { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import UserMenu from "./UserMenu";
-import { FaShoppingCart, FaBell, FaBox, FaPills } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
-
-
+// Material UI Icons
+import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 const Navbar = () => {
   const { user } = useContext(AuthContext);
   const { cart } = useContext(CartContext);
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ add this
   const [hoveredIcon, setHoveredIcon] = useState(null);
 
-  const cartCount = cart.reduce((total, item) => total + (item.quantity || 0), 0);
+  const hiddenPaths = ["/admin", "/vendor"];
+  const isHidden = hiddenPaths.some((path) => location.pathname.startsWith(path));
 
-  const iconColors = {
-    medicines: "#00d4b3",
-    cart: "#00c851",
-    notifications: "#33b5e5",
-    orders: "#ffbb33",
-  };
+  // Only hide if path is hidden OR user is logged in as admin/vendor
+  const shouldHideNavbar = isHidden || (user && user.role && user.role !== "customer");
+
+  if (shouldHideNavbar) return null;
+  const cartCount = cart.reduce((total, item) => total + (item.quantity || 0), 0);
 
   const handleMouseEnter = (icon) => setHoveredIcon(icon);
   const handleMouseLeave = () => setHoveredIcon(null);
 
+
   return (
     <nav style={styles.navbar}>
-      {/* Left: Logo */}
+      {/* Logo */}
       <h2 style={styles.logo} onClick={() => navigate("/")}>
-        💊 <span style={styles.logoText}>Sehatly</span>
+        💊 Sehatly
       </h2>
 
-      {/* Right: Icons & User */}
+      {/* Right side icons */}
       <div style={styles.right}>
-        {/** Medicines icon **/}
+        {/* Medicines */}
         <div
           style={{
             ...styles.iconWrapper,
-            color: hoveredIcon === "medicines" ? "#00fff0" : iconColors.medicines,
-            transform: hoveredIcon === "medicines" ? "translateY(-2px)" : "translateY(0)",
+            transform: hoveredIcon === "medicines" ? "scale(1.15)" : "scale(1)",
+            backgroundColor:
+              hoveredIcon === "medicines" ? "rgba(255,255,255,0.18)" : "transparent",
           }}
           onClick={() => navigate("/")}
           title="Medicines"
           onMouseEnter={() => handleMouseEnter("medicines")}
           onMouseLeave={handleMouseLeave}
         >
-          <FaPills size={24} />
+          <LocalPharmacyIcon sx={{ fontSize: 26 }} />
         </div>
 
-        {/** Cart icon **/}
+        {/* Cart */}
         <div
           style={{
             ...styles.iconWrapper,
-            color: hoveredIcon === "cart" ? "#00ff90" : iconColors.cart,
-            transform: hoveredIcon === "cart" ? "translateY(-2px)" : "translateY(0)",
+            transform: hoveredIcon === "cart" ? "scale(1.15)" : "scale(1)",
+            backgroundColor:
+              hoveredIcon === "cart" ? "rgba(255,255,255,0.18)" : "transparent",
           }}
           onClick={() => navigate("/cart")}
           title="Cart"
           onMouseEnter={() => handleMouseEnter("cart")}
           onMouseLeave={handleMouseLeave}
         >
-          <FaShoppingCart size={24} />
+          <ShoppingCartIcon sx={{ fontSize: 26 }} />
           {cartCount > 0 && <span style={styles.badge}>{cartCount}</span>}
         </div>
 
-        {/** Notifications icon **/}
+        {/* Notifications */}
         <div
           style={{
             ...styles.iconWrapper,
-            color: hoveredIcon === "notifications" ? "#66ccff" : iconColors.notifications,
-            transform: hoveredIcon === "notifications" ? "translateY(-2px)" : "translateY(0)",
+            transform: hoveredIcon === "notifications" ? "scale(1.15)" : "scale(1)",
+            backgroundColor:
+              hoveredIcon === "notifications" ? "rgba(255,255,255,0.18)" : "transparent",
           }}
+          onClick = {() => navigate("/notifications")}
           title="Notifications"
           onMouseEnter={() => handleMouseEnter("notifications")}
           onMouseLeave={handleMouseLeave}
         >
-          <FaBell size={24} />
+          <NotificationsIcon sx={{ fontSize: 26 }} />
         </div>
 
-        {/** Orders icon **/}
+        {/* Orders */}
         <div
           style={{
             ...styles.iconWrapper,
-            color: hoveredIcon === "orders" ? "#ffc233" : iconColors.orders,
-            transform: hoveredIcon === "orders" ? "translateY(-2px)" : "translateY(0)",
+            transform: hoveredIcon === "orders" ? "scale(1.15)" : "scale(1)",
+            backgroundColor:
+              hoveredIcon === "orders" ? "rgba(255,255,255,0.18)" : "transparent",
             cursor: "pointer",
           }}
           title="Orders"
@@ -94,12 +103,10 @@ const Navbar = () => {
           onMouseEnter={() => handleMouseEnter("orders")}
           onMouseLeave={handleMouseLeave}
         >
-          <FaBox size={24} />
+          <InventoryIcon sx={{ fontSize: 26 }} />
         </div>
 
-
-
-        {/** User menu or login/signup **/}
+        {/* User */}
         {user ? (
           <UserMenu />
         ) : (
@@ -107,8 +114,7 @@ const Navbar = () => {
             to="/login"
             style={{
               ...styles.loginLink,
-              color: hoveredIcon === "login" ? "#ffd700" : "#ffffff",
-              transform: hoveredIcon === "login" ? "translateY(-2px)" : "translateY(0)",
+              transform: hoveredIcon === "login" ? "scale(1.1)" : "scale(1)",
             }}
             onMouseEnter={() => handleMouseEnter("login")}
             onMouseLeave={handleMouseLeave}
@@ -121,85 +127,77 @@ const Navbar = () => {
   );
 };
 
+export default Navbar;
+
+/* ----------------------------------
+   CLEAN, MODERN STYLE SYSTEM
+---------------------------------- */
 const styles = {
   navbar: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "12px 40px",
-    background: "linear-gradient(135deg, #00bfa5, #00d4b3)",
-    backdropFilter: "blur(12px)",
-    borderRadius: "20px",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+    padding: "14px 40px",
+    backgroundColor: "#0A8F8A",
+    borderRadius: "16px",
+    boxShadow: "0 6px 20px rgba(0,0,0,0.12)",
     position: "sticky",
     top: 15,
     zIndex: 2000,
     transition: "all 0.3s ease",
     fontFamily: "'Inter', sans-serif",
   },
+
   logo: {
     margin: 0,
-    fontSize: "1.9rem",
+    fontSize: "1.8rem",
     display: "flex",
     alignItems: "center",
     gap: "8px",
     cursor: "pointer",
-    textShadow: "2px 2px 5px rgba(0,0,0,0.2)",
-    color: "white",
-  },
-  logoText: {
+    color: "#ffffff",
     fontWeight: "800",
-    letterSpacing: "1.2px",
   },
+
   right: {
     display: "flex",
     alignItems: "center",
-    gap: "28px",
+    gap: "22px",
   },
+
   iconWrapper: {
     position: "relative",
     cursor: "pointer",
-    transition: "all 0.3s ease",
-    padding: "8px",
-    borderRadius: "10px",
+    transition: "0.25s ease",
+    padding: "6px",
+    borderRadius: "8px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    color: "white",
   },
+
   badge: {
     position: "absolute",
     top: "-6px",
     right: "-10px",
-    background: "linear-gradient(135deg, #ff3b2f, #ff6f61)",
+    backgroundColor: "#ff4d4f",
     color: "white",
     borderRadius: "50%",
-    padding: "4px 8px",
-    fontSize: "12px",
+    padding: "3px 7px",
+    fontSize: "11px",
     fontWeight: "700",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
-    animation: "pop 0.3s ease",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
   },
+
   loginLink: {
     color: "white",
     textDecoration: "none",
-    fontWeight: "700",
+    fontWeight: "600",
     padding: "6px 16px",
-    borderRadius: "12px",
-    background: "rgba(255,255,255,0.1)",
-    backdropFilter: "blur(8px)",
-    transition: "all 0.3s ease",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    borderRadius: "8px",
+    backgroundColor: "#066E69",
+    transition: "0.3s ease",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
   },
 };
-
-// Keyframes for badge pop
-const styleSheet = document.styleSheets[0];
-styleSheet.insertRule(`
-@keyframes pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-`, styleSheet.cssRules.length);
-
-export default Navbar;

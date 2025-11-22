@@ -1,8 +1,11 @@
+// frontend/src/components/AdminDashboard.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import CountUp from "react-countup";
-
-// Chart.js
+import socket from "../socket";
+import { Bar, Line } from "react-chartjs-2";
+import { motion, AnimatePresence } from "framer-motion";
+import { Settings, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,211 +17,128 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar, Line } from "react-chartjs-2";
 
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
-// Framer Motion
-import { motion, AnimatePresence } from "framer-motion";
-
-// Icons
-import { Settings, TrendingUp, Package, Users, Eye, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-// Helper for conditional classes
 const cx = (...args) => args.filter(Boolean).join(" ");
+const adminToken = localStorage.getItem("adminToken");
 
-export default function AdminDashboardLavish() {
-  const [tab, setTab] = useState(0);
-  const [metrics, setMetrics] = useState({
-    "total-revenue": { totalRevenue: 0, monthly: 0, refunds: 0 },
-    "profit-margin": { profit: 0, cost: 0, margin: 0 },
-    aov: { avgOrderValue: 0 },
-    "conversion-rate": { conversionRate: 0 },
-    clv: 0,
-    "top-medicines": [],
-    "growth-rate": { growthRate: 0 },
-  });
-
+export default function AdminDashboard() {
+  const [selectedTab, setSelectedTab] = useState("Analytics");
+  const [metrics, setMetrics] = useState({});
   const [expanded, setExpanded] = useState({});
   const [loading, setLoading] = useState(true);
+  const [revenueHistory, setRevenueHistory] = useState([]);
   const [heroPulse, setHeroPulse] = useState(false);
-  const [modalChart, setModalChart] = useState(null); // { title, data, options }
+  const [modalChart, setModalChart] = useState(null);
 
   useEffect(() => void setHeroPulse(true), []);
 
-  const toggleExpand = (key) => setExpanded((p) => ({ ...p, [key]: !p[key] }));
+  const toggleExpand = (key) => setExpanded(p => ({ ...p, [key]: !p[key] }));
 
   const fetchMetrics = async () => {
-    try {
-      setLoading(true);
-      const urls = [
-        "total-revenue",
-        "profit-margin",
-        "aov",
-        "conversion-rate",
-        "clv",
-        "top-medicines",
-        "cac",
-        "roi",
-        "break-even",
-        "growth-rate",
-      ];
+  if (!adminToken) return;
 
-      const promises = urls.map((u) =>
-        axios
-          .get(`/api/admin/${u}`, { withCredentials: true })
-          .then((r) => ({ key: u, data: r.data }))
-          .catch(() => ({ key: u, error: true }))
-      );
+  try {
+    setLoading(true);
 
-      const resolved = await Promise.all(promises);
-      const results = {};
-      resolved.forEach((r) => {
-        if (!r.error) results[r.key] = r.data;
-      });
+    const urls = [
+      "total-revenue",
+      "profit-margin",
+      "aov",
+      "conversion-rate",
+      "clv",
+      "top-medicines",
+      "growth-rate",
+      "revenue-history",
+    ];
 
-      setMetrics(results);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  };
+    const promises = urls.map((u) =>
+      axios
+        .get(`http://localhost:5000/api/admin/${u}`, {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${adminToken}` },
+        })
+        .then((r) => ({ key: u, data: r.data }))
+        .catch(() => ({ key: u, error: true }))
+    );
+
+    const resolved = await Promise.all(promises);
+
+    const newMetrics = {};
+    let newRevenueHistory = [];
+
+    resolved.forEach((r) => {
+      if (!r.error) {
+        if (r.key === "revenue-history") {
+          newRevenueHistory = r.data || [];
+        } else {
+          newMetrics[r.key] = r.data;
+        }
+      }
+    });
+
+    // Merge existing metrics to avoid overwriting missing values
+    setMetrics((prev) => ({ ...prev, ...newMetrics }));
+    setRevenueHistory(newRevenueHistory);
+
+    setLoading(false);
+  } catch (err) {
+    console.error(err);
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
+    if (!adminToken) return;
+    socket.connect();
+    socket.on("connect", () => console.log("Admin dashboard connected:", socket.id));
+    socket.on("disconnect", reason => console.log("Disconnected:", reason));
+    socket.on("newOrder", () => { fetchMetrics(); });
     fetchMetrics();
-    const interval = setInterval(fetchMetrics, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("newOrder");
+    };
   }, []);
 
-  // ---- Charts ----
-  const revenueChart = useMemo(
-    () => ({
-      labels: ["Revenue", "Profit", "Cost"],
-      datasets: [
-        {
-          label: "Amount (USD)",
-          data: [
-            metrics["total-revenue"]?.totalRevenue || 0,
-            metrics["profit-margin"]?.profit || 0,
-            metrics["profit-margin"]?.cost || 0,
-          ],
-          backgroundColor: ["rgba(79, 209, 197, 0.9)", "rgba(79, 153, 255, 0.9)", "rgba(255, 111, 97, 0.9)"],
-          borderRadius: 8,
-        },
+  const revenueChart = useMemo(() => ({
+    labels: ["Revenue", "Profit", "Cost"],
+    datasets: [{
+      label: "Amount (USD)",
+      data: [
+        metrics["total-revenue"]?.totalRevenue || 0,
+        metrics["profit-margin"]?.profit || 0,
+        metrics["profit-margin"]?.cost || 0
       ],
-    }),
-    [metrics]
-  );
+      backgroundColor: ["rgba(79, 209, 197, 0.9)", "rgba(79, 153, 255, 0.9)", "rgba(255, 111, 97, 0.9)"],
+      borderRadius: 8
+    }]
+  }), [metrics]);
 
-  const topMedicinesChart = useMemo(
-    () => ({
-      labels: metrics["top-medicines"]?.map((m) => m._id) || [],
-      datasets: [
-        {
-          label: "Units Sold",
-          data: metrics["top-medicines"]?.map((m) => m.totalSold) || [],
-          backgroundColor: "rgba(255, 181, 64, 0.95)",
-          borderRadius: 8,
-        },
-      ],
-    }),
-    [metrics]
-  );
+  const sparklineData = useMemo(() => ({
+    labels: revenueHistory.map((_, i) => `D${i+1}`),
+    datasets: [{
+      label: "Revenue",
+      data: revenueHistory,
+      fill: true,
+      backgroundColor: "rgba(79, 209, 197, 0.3)",
+      borderColor: "rgba(79, 209, 197, 1)",
+      tension: 0.4,
+    }]
+  }), [revenueHistory]);
 
-  const sparklineData = useMemo(
-    () => ({
-      labels: Array.from({ length: 12 }, (_, i) => `D${i + 1}`),
-      datasets: [
-        {
-          data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 200 + 20)),
-          fill: true,
-          tension: 0.4,
-        },
-      ],
-    }),
-    []
-  );
-
-  // Modal helpers
-  const openChartModal = (title, chartObj, ChartComponent = Bar) =>
-    setModalChart({ title, chartObj, ChartComponent });
+  const openChartModal = (title, chartObj, ChartComponent = Bar) => setModalChart({ title, chartObj, ChartComponent });
   const closeChartModal = () => setModalChart(null);
 
-  // Skeleton
-  const Skeleton = () => (
-    <div className="animate-pulse bg-gradient-to-r from-gray-100 to-gray-50 rounded-xl h-28 w-full" />
-  );
+  const Skeleton = () => <div className="animate-pulse bg-gray-200 rounded-xl h-28 w-full" />;
 
-  return (
-    <div className="min-h-screen p-6 bg-gradient-to-b from-slate-50 via-white to-slate-100 font-inter">
-      <div className="max-w-7xl mx-auto">
-        {/* Header / Hero */}
-        <motion.header
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center justify-between mb-6"
-        >
-          <div className="flex items-center gap-4">
-            <div
-              className={cx(
-                "p-3 rounded-2xl shadow-2xl",
-                heroPulse ? "bg-gradient-to-br from-emerald-400 to-cyan-400" : "bg-emerald-400"
-              )}
-            >
-              <Sparkles className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Sehatly Admin • Analytics</h1>
-              <p className="text-sm text-slate-500 mt-1">
-                A lavish, highly-interactive dashboard with animated insights.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow hover:shadow-lg transition">
-              <Settings size={16} /> Settings
-            </button>
-            <div className="bg-white px-4 py-2 rounded-2xl shadow text-sm">Auto-refresh: 30s</div>
-          </div>
-        </motion.header>
-
-        {/* Tabs */}
-        <nav className="bg-white rounded-2xl shadow p-1 mb-6 flex gap-1 overflow-hidden">
-          {[
-            { label: "Overview", icon: TrendingUp },
-            { label: "Orders", icon: Package },
-            { label: "Customers", icon: Users },
-            { label: "Growth", icon: TrendingUp },
-            { label: "Top Items", icon: Eye },
-          ].map((t, i) => (
-            <button
-              key={t.label}
-              onClick={() => setTab(i)}
-              className={cx(
-                "flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-all",
-                tab === i
-                  ? "bg-gradient-to-br from-indigo-600 to-cyan-500 text-white shadow-lg"
-                  : "text-slate-600 hover:bg-slate-50"
-              )}
-            >
-              <t.icon size={16} /> {t.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* Content area */}
+  // ----- Content Components -----
+  function AnalyticsContent({ metrics, loading, toggleExpand, openChartModal, revenueChart, sparklineData, expanded }) {
+    return (
+      <>
         <div className="grid grid-cols-12 gap-6">
           {/* Left column */}
           <div className="col-span-12 lg:col-span-8">
@@ -253,8 +173,9 @@ export default function AdminDashboardLavish() {
                     </button>
                   </div>
                 </div>
-
-                <div className="mt-4">{loading ? <Skeleton /> : <div className="text-xs text-slate-500">Revenue is surging thanks to higher AOV and conversion improvements.</div>}</div>
+                <div className="mt-4">
+                  {loading ? <Skeleton /> : <div className="text-xs text-slate-500">Revenue is surging thanks to higher AOV and conversion improvements.</div>}
+                </div>
               </motion.div>
 
               {/* Average Order Value */}
@@ -418,36 +339,324 @@ export default function AdminDashboardLavish() {
             </motion.div>
           </aside>
         </div>
-      </div>
+      </>
+    );
+  }
 
-      {/* Modal */}
-      <AnimatePresence>
-        {modalChart && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeChartModal}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-lg"
-              onClick={(e) => e.stopPropagation()}
+
+function VendorsContent() {
+  const [vendors, setVendors] = useState([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/vendor/vendors", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${adminToken}`
+          },
+          withCredentials: true
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          setError(data.message || "Failed to fetch vendors");
+        } else {
+          setVendors(data.vendors);
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchVendors();
+  }, []);
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Approved Vendors</h2>
+
+      {error && <p className="text-red-500">{error}</p>}
+
+      {vendors.length === 0 && !error ? (
+        <p className="text-sm text-slate-500">No vendors yet.</p>
+      ) : (
+        <div className="grid gap-4">
+          {vendors.map((vendor) => (
+            <div
+              key={vendor._id}
+              className="p-4 bg-slate-50 rounded-lg shadow-sm flex flex-col gap-1"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-lg">{modalChart.title}</h3>
-                <button onClick={closeChartModal} className="text-slate-500 hover:text-slate-700 font-bold">
-                  ×
+              <p className="font-semibold">{vendor.name}</p>
+              <p className="text-xs text-slate-500">{vendor.email}</p>
+
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+}
+function RequestsContent() {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  //const adminToken = localStorage.getItem("adminToken");
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get("http://localhost:5000/api/vendor/requests", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${adminToken}`
+          },
+          withCredentials: true
+        });
+        setRequests(res.data.requests);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, [adminToken]);
+
+    const handleApprove = async (reqId) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/vendor/approve/${reqId}`,
+        {}, // POST body
+        {
+          headers: {
+            "Authorization": `Bearer ${adminToken}`
+          },
+          withCredentials: true
+        }
+      );
+
+      setRequests((prev) => prev.filter((r) => r._id !== reqId));
+    } catch (err) {
+      console.error("Error approving request:", err);
+    }
+  };
+
+
+  const handleReject = async (reqId) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/vendor/reject/${reqId}`,
+        {}, // POST body (empty)
+        {
+          headers: {
+            "Authorization": `Bearer ${adminToken}`
+          },
+          withCredentials: true
+        }
+      );
+
+      setRequests((prev) => prev.filter((r) => r._id !== reqId));
+    } catch (err) {
+      console.error("Error rejecting request:", err);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Vendor Requests</h2>
+
+      {loading ? (
+        <p className="text-sm text-slate-500">Loading requests...</p>
+      ) : requests.length ? (
+        <div className="grid gap-4">
+          {requests.map((req) => (
+            <div
+              key={req._id}
+              className="flex justify-between items-start p-4 rounded-lg bg-slate-50 shadow-sm"
+            >
+              <div className="space-y-1">
+                <p className="font-semibold">{req.name}</p>
+                <p className="text-xs text-slate-500">{req.email}</p>
+                {req.phone && <p className="text-xs">Phone: {req.phone}</p>}
+                {req.businessName && <p className="text-xs">Business: {req.businessName}</p>}
+                {req.serviceType && <p className="text-xs">Service: {req.serviceType}</p>}
+                {req.city && <p className="text-xs">City: {req.city}</p>}
+                {req.website && <p className="text-xs">Website: {req.website}</p>}
+                {req.message && <p className="text-xs">Message: {req.message}</p>}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => handleApprove(req._id)}
+                  className="px-4 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleReject(req._id)}
+                  className="px-4 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition"
+                >
+                  Reject
                 </button>
               </div>
-              <modalChart.ChartComponent data={modalChart.chartObj} options={{ responsive: true, plugins: { legend: { position: "bottom" } } }} />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">No vendor requests at the moment</p>
+      )}
     </div>
   );
 }
+function DonationsContent() {
+  const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios
+      .get("/api/admin/donations", { withCredentials: true })
+      .then(res => {
+        setDonations(res.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Donations</h2>
+      {loading ? (
+        <p className="text-sm text-slate-500">Loading donations...</p>
+      ) : donations.length ? (
+        <div className="grid gap-3">
+          {donations.map(d => (
+            <div key={d._id} className="flex justify-between items-center p-3 rounded-lg bg-slate-50">
+              <div>
+                <p className="font-semibold">{d.name}</p>
+                <p className="text-xs text-slate-500">Amount: ${d.amount}</p>
+              </div>
+              <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg">View Details</button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">No donations at the moment</p>
+      )}
+    </div>
+  );
+}
+
+  return (
+      <div className="min-h-screen p-6 bg-gradient-to-b from-slate-50 via-white to-slate-100 font-inter">
+        <div className="max-w-7xl mx-auto">
+          {/* Header / Hero */}
+          <motion.header
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center justify-between mb-6"
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className={cx(
+                  "p-3 rounded-2xl shadow-2xl",
+                  heroPulse ? "bg-gradient-to-br from-emerald-400 to-cyan-400" : "bg-emerald-400"
+                )}
+              >
+                <Sparkles className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Sehatly Admin • Analytics</h1>
+                <p className="text-sm text-slate-500 mt-1">
+                  A lavish, highly-interactive dashboard with animated insights.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow hover:shadow-lg transition">
+                <Settings size={16} /> Settings
+              </button>
+              <div className="bg-white px-4 py-2 rounded-2xl shadow text-sm">Auto-refresh: 30s</div>
+            </div>
+          </motion.header>
+
+          {/* Tabs */}
+          <div className="flex gap-6">
+            {/* Sidebar */}
+            <aside className="sidebar bg-white shadow-lg rounded-2xl p-5 w-64 flex flex-col gap-4">
+              {["Analytics", "Vendors", "Requests", "Donations"].map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setSelectedTab(tab)}
+                  className={cx(
+                    "text-left px-4 py-2 rounded-xl font-medium transition",
+                    selectedTab === tab
+                      ? "bg-gradient-to-br from-indigo-600 to-cyan-500 text-white"
+                      : "hover:bg-slate-50 text-slate-700"
+                  )}
+                >
+                  {tab}
+                </button>
+              ))}
+            </aside>
+
+            {/* Main content */}
+            <main className="flex-1">
+              {selectedTab === "Analytics" && (
+                <AnalyticsContent
+                  metrics={metrics}
+                  loading={loading}
+                  toggleExpand={toggleExpand}
+                  openChartModal={openChartModal}
+                  revenueChart={revenueChart}
+                  sparklineData={sparklineData}
+                  expanded={expanded}
+                />
+              )}
+
+              {selectedTab === "Vendors" && <VendorsContent />}
+              {selectedTab === "Requests" && <RequestsContent />}
+              {selectedTab === "Donations" && <DonationsContent />}
+            </main>
+          </div>
+        </div>
+
+        {/* Modal */}
+        <AnimatePresence>
+          {modalChart && (
+            <motion.div
+              className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeChartModal}
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-lg">{modalChart.title}</h3>
+                  <button onClick={closeChartModal} className="text-slate-500 hover:text-slate-700 font-bold">
+                    ×
+                  </button>
+                </div>
+                <modalChart.ChartComponent data={modalChart.chartObj} options={{ responsive: true, plugins: { legend: { position: "bottom" } } }} />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }

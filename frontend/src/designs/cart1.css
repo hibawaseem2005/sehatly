@@ -73,7 +73,7 @@ body{background:var(--bg);font-family:Inter, "Poppins", system-ui, -apple-system
 .med-thumb{width:70px;height:70px;background:linear-gradient(120deg,#e9fff5,#e6f3ff);border-radius:10px;flex:0 0 70px}
 .med-main{flex:1}
 .med-title{font-weight:700}
-.med-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.med-sub{font-size:13px;color:#6b7280;margin-top:4px}
 .med-meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
 .price{font-weight:700;color:#0b1220}
 .qty-controls{display:flex;align-items:center;gap:8px;background:#f6fffb;padding:6px;border-radius:8px;border:1px solid #e6f7ef}
@@ -109,7 +109,7 @@ body{background:var(--bg);font-family:Inter, "Poppins", system-ui, -apple-system
 .radio-card input[type=radio]{transform:scale(1.2)}
 .radio-card .radio-body{display:flex;flex-direction:column}
 .radio-card .radio-title{font-weight:700}
-.radio-card .radio-sub{font-size:13px;color:var(--muted)}
+.radio-card .radio-sub{font-size:13px;color:#6b7280}
 .radio-card:hover{transform:translateY(-4px);border-color:rgba(10,160,123,0.12)}
 .radio-card.checked{border-color:var(--teal);box-shadow:0 6px 18px rgba(10,160,123,0.06)}
 

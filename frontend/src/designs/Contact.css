@@ -1,0 +1,387 @@
+/* ====== Modern Teal Gradient + Glassmorphism + Animations (Updated) ====== */
+:root{
+  --teal: #00c6b1;
+  --teal-dark: #009f8d;
+  --glass-bg: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.18);
+  --shadow: 0 14px 40px rgba(0,0,0,0.25);
+  --muted: rgba(255,255,255,0.75);
+  --success: #2ecc71;
+  --warn: #f39c12;
+  --danger: #e74c3c;
+  --max-width: 1200px;
+}
+
+/* Page Container */
+.contact-page {
+  background: linear-gradient(135deg,#001f1f 0%, #00383a 45%, #006b6b 100%);
+  color: #fff;
+  min-height: 100vh;
+  padding-bottom: 96px;
+  overflow-x: hidden;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* ---------- HERO (fade-in) ---------- */
+.contact-hero {
+  text-align: center;
+  padding: 96px 20px 60px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  will-change: opacity, transform;
+  animation: heroFadeIn 900ms cubic-bezier(.22,.9,.38,1) both;
+}
+.contact-hero h1{
+  font-size: clamp(2.4rem, 4.2vw, 3.4rem);
+  line-height: 1.02;
+  margin: 0 0 10px;
+  letter-spacing: -0.6px;
+}
+.contact-hero p{
+  color: rgba(255,255,255,0.9);
+  margin: 0;
+  font-size: 1.05rem;
+}
+.accent{ color: var(--teal); font-weight: 700; }
+
+/* ---------- CONTACT INFO CARDS (scale-up on load & hover) ---------- */
+.contact-info{
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 28px 18px;
+  flex-wrap: wrap;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+.info-card{
+  width: 260px;
+  min-height: 140px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px) saturate(120%);
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: transform 280ms cubic-bezier(.2,.9,.3,1), box-shadow 280ms ease;
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: cardEntrance 700ms cubic-bezier(.22,.9,.38,1) both;
+}
+.info-card:hover{
+  transform: translateY(-10px) scale(1.035);
+  box-shadow: 0 22px 48px rgba(0,0,0,0.42);
+}
+.info-card svg{ display:block; margin: 0 auto; opacity: 0.95; }
+.info-card h3{ margin-top: 12px; font-size: 1.15rem; color: var(--teal); }
+.info-card p{ margin: 8px 0 0; color: var(--muted); font-size: .98rem; }
+
+/* ---------- SUPPORT HOURS (agent availability indicator) ---------- */
+.support-hours{
+  margin: 36px auto;
+  width: min(92%, 760px);
+  padding: 22px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.support-hours h3{ color: var(--teal); margin: 0 0 8px; font-size: 1.25rem; }
+.support-hours p{ margin: 4px 0; color: rgba(255,255,255,0.9); }
+
+/* Agent status row */
+.availability{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.95);
+}
+.availability .dot{
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+  transition: background 200ms ease, transform 220ms ease, box-shadow 220ms ease;
+  transform-origin: center;
+}
+
+/* Agent Status States */
+.agent-status.available .dot,
+.dot.available { background: var(--success); box-shadow: 0 8px 18px rgba(46,204,113,0.18); transform: scale(1); }
+.agent-status.busy .dot,
+.dot.busy { background: var(--warn); box-shadow: 0 8px 18px rgba(243,156,18,0.18); transform: scale(1.03); }
+.agent-status.offline .dot,
+.dot.offline { background: var(--danger); box-shadow: 0 8px 18px rgba(231,76,60,0.14); transform: scale(0.98); }
+
+/* ---------- CONTACT FORM (slide-up) ---------- */
+.contact-form-section{
+  text-align: center;
+  padding: 44px 18px 60px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  will-change: transform, opacity;
+  animation: formSlideUp 820ms cubic-bezier(.22,.9,.38,1) both;
+}
+.contact-form-section h2{ font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom: 16px; color: #fff; }
+.contact-form{
+  max-width: 640px;
+  margin: 0 auto;
+  display:flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+.contact-form input, .contact-form textarea {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  outline: none;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.35);
+  font-size: 0.98rem;
+  transition: box-shadow 180ms ease, transform 160ms ease;
+}
+.contact-form input:focus, .contact-form textarea:focus{
+  box-shadow: 0 10px 30px rgba(0,0,0,0.48);
+  transform: translateY(-2px);
+}
+.send-btn{
+  padding: 13px 16px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-dark));
+  color: white;
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.32);
+}
+.send-btn:hover{ transform: translateY(-4px) scale(1.02); }
+.success-msg{ margin-top:8px; color: #bfffe9; animation: fadeIn 420ms ease; }
+
+/* ---------- MAP (animated reveal) ---------- */
+.contact-map{
+  text-align:center;
+  margin-top: 46px;
+  padding: 18px;
+  max-width: var(--max-width);
+  margin-left:auto;
+  margin-right:auto;
+}
+.contact-map h2{ margin-bottom: 14px; color: #fff; }
+.contact-map iframe {
+  display: block;         /* make iframe a block element */
+  margin: 0 auto;         /* center horizontally */
+  width: 92%;
+  max-width: 980px;
+  height: 380px;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateY(18px) scale(.995);
+  transition: opacity 720ms cubic-bezier(.22,.9,.38,1),
+              transform 720ms cubic-bezier(.22,.9,.38,1);
+}
+
+
+/* When map has class .revealed (toggle by JS or whileInView) */
+.contact-map.revealed iframe,
+.contact-map iframe[inview="true"]{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ---------- CHATBOT WIDGET + CHAT WINDOW (floating) ---------- */
+.chatbot-widget{
+  position: fixed;
+  bottom: 26px;
+  right: 26px;
+  background: linear-gradient(180deg, var(--teal), var(--teal-dark));
+  width: 64px;
+  height: 64px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 22px 48px rgba(0,0,0,0.44);
+  z-index: 9999;
+  transition: transform 240ms cubic-bezier(.2,.9,.3,1), box-shadow 240ms ease, opacity 220ms ease;
+  will-change: transform;
+  animation: widgetPop 720ms cubic-bezier(.2,.9,.3,1);
+  outline: none;
+  border: 2px solid rgba(255,255,255,0.06);
+}
+.chatbot-widget:active{ transform: scale(.98); }
+.chatbot-widget:focus{ box-shadow: 0 0 0 6px rgba(0,198,177,0.12); }
+
+/* Small live chat label above widget */
+.live-chat-label{
+  position: fixed;
+  right: 98px;
+  bottom: 34px;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: .92rem;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+  z-index: 9998;
+  pointer-events: none;
+  transform-origin: right center;
+  opacity: 0.98;
+}
+
+/* Chat window panel */
+.chat-window{
+  position: fixed;
+  bottom: 100px;
+  right: 26px;
+  width: min(380px, 92vw);
+  max-height: 68vh;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 28px 80px rgba(0,0,0,0.6);
+  z-index: 10000;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  animation: chatOpen 380ms cubic-bezier(.22,.9,.38,1) both;
+}
+
+/* Chat header */
+.chat-header{
+  background: linear-gradient(90deg, rgba(0,0,0,0.18), rgba(255,255,255,0.02));
+  padding: 14px 16px;
+  font-weight: 700;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color: #fff;
+  gap:12px;
+}
+.chat-header .close-btn{
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.92);
+  cursor: pointer;
+  font-weight: 700;
+  padding: 6px;
+  border-radius: 8px;
+}
+.chat-header .close-btn:hover{ background: rgba(255,255,255,0.03); }
+
+/* Chat body (messages) */
+.chat-body{
+  padding: 16px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  color: rgba(255,255,255,0.95);
+  font-size: .98rem;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+}
+
+/* Chat input area */
+.chat-input-row{
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  display:flex;
+  gap: 8px;
+  align-items:center;
+  background: rgba(0,0,0,0.02);
+}
+.chat-input{
+  flex: 1 1 auto;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: .95rem;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.28);
+}
+.chat-send-btn{
+  background: linear-gradient(90deg, var(--teal), var(--teal-dark));
+  border: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* tiny message bubble styles (example) */
+.msg{
+  display:inline-block;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  max-width: 86%;
+  line-height: 1.25;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+}
+.msg.user{ background: rgba(255,255,255,0.95); color: #0b0b0b; margin-left:auto; }
+.msg.agent{ background: rgba(255,255,255,0.06); color: #fff; }
+
+/* ---------- SMALL / LARGE SCREEN ADJUSTMENTS ---------- */
+@media (max-width: 880px){
+  .contact-info{ gap:16px; }
+  .info-card{ width: calc(50% - 22px); min-width: 160px; }
+  .chat-window{ right: 12px; bottom: 120px; width: min(92vw, 420px); }
+  .live-chat-label{ display:none; }
+}
+@media (max-width:520px){
+  .info-card{ width: 100%; }
+  .contact-hero{ padding: 60px 14px 30px; }
+  .contact-map iframe{ height: 320px; }
+  .chat-window{ bottom: 110px; }
+}
+
+/* ---------- KEYFRAMES ---------- */
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes formSlideUp {
+  from { opacity: 0; transform: translateY(28px) scale(.995); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(10px) scale(.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes widgetPop {
+  0% { opacity: 0; transform: scale(.25) translateY(12px); }
+  60%{ opacity: 1; transform: scale(1.06) translateY(0); }
+  100%{ transform: scale(1); }
+}
+@keyframes chatOpen {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+/* ---------- Utility helpers (for js toggles) ---------- */
+/* Add .open to .chatbot-widget to indicate active state */
+.chatbot-widget.open { transform: scale(1.02) rotate(-6deg); box-shadow: 0 30px 68px rgba(0,0,0,0.55); }
+
+/* small helper to visually hide while keeping accessible */
+.sr-only { position: absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* ---------- End of CSS ---------- */

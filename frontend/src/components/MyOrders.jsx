@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import "./MyOrders.css"; // we'll create a separate CSS file
+import "../designs/MyOrders.css"; // we'll create a separate CSS file
 
 export default function MyOrders() {
   const { token } = useContext(AuthContext);

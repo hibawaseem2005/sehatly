@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Plus, Upload, ChevronDown } from "lucide-react";
-import "./AddMedicine.css";
+import { Plus, ChevronDown } from "lucide-react";
+import "../designs/AddMedicine.css";
 
 const AddMedicine = () => {
   const categories = {
@@ -26,11 +26,12 @@ const AddMedicine = () => {
     price: "",
     discount: "",
     stockQuantity: "",
+    req_prescription: false, // Added field
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
   const handleSubmit = async (e) => {
@@ -70,6 +71,7 @@ const AddMedicine = () => {
           price: "",
           discount: "",
           stockQuantity: "",
+          req_prescription: false,
         });
       } else alert("Error: " + data.message);
     } catch (err) {
@@ -84,12 +86,7 @@ const AddMedicine = () => {
         <h2 className="sidebar-logo">Sehatly</h2>
         <ul>
           <li className="active-item">Dashboard</li>
-          <li>Medicines</li>
-          <li>Orders</li>
-          <li>Analytics</li>
-          <li>Suppliers</li>
-          <li>Customers</li>
-          <li>Promotions</li>
+          <li>My Medicines</li>
           <li>Settings</li>
         </ul>
       </aside>
@@ -118,6 +115,19 @@ const AddMedicine = () => {
 
             <label>Description</label>
             <textarea name="description" value={formData.description} onChange={handleChange} required />
+
+            {/* Prescription checkbox */}
+            <div className="checkbox-wrapper">
+              <label>
+                <input
+                  type="checkbox"
+                  name="req_prescription"
+                  checked={formData.req_prescription}
+                  onChange={handleChange}
+                />
+                Requires Prescription
+              </label>
+            </div>
 
             <h2 className="section-head">Pricing & Stock</h2>
 
@@ -158,6 +168,7 @@ const AddMedicine = () => {
               <p><strong>{recentlyAdded.name}</strong></p>
               <p>{recentlyAdded.brand}</p>
               <p>Rs. {recentlyAdded.price}</p>
+              <p>{recentlyAdded.req_prescription ? "Prescription Required" : "No Prescription"}</p>
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
 import React, { useContext, useState, useRef } from "react";
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
-import "./cart1.css";
+import "../designs/cart1.css";
 
 export default function Cart() {
   // expected from CartContext: cart (array), removeFromCart(id), totalPrice (number), clearCart(), updateQuantity(id, qty)
@@ -79,7 +79,7 @@ export default function Cart() {
 
   const removePrescription = () => {
     setPrescriptionFile(null);
-    if (presRef.current) presRef.current.value = "";
+    if (presRef.current) presRef.current.value = "";//presRef.current.value = "" is necessary to reset the native file input (so user can re-upload the same file if they want).
   };
 
   // Step navigation

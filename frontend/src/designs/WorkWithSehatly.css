@@ -1,0 +1,94 @@
+:root {
+  --teal: #00c6b1;
+  --teal-dark: #009f8d;
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --shadow: 0 8px 25px rgba(0, 0, 0, 0.16);
+}
+
+.work-page {
+  padding-bottom: 60px;
+  color: white;
+  background: linear-gradient(135deg, #002b2b, #004f4f, #007f7f);
+  text-align: center;
+}
+
+/* HERO */
+.work-hero {
+  padding: 100px 20px;
+}
+.work-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+.accent {
+  color: var(--teal);
+}
+.work-hero p {
+  font-size: 1.2rem;
+}
+
+/* ROLE SELECTION */
+.role-selection {
+  margin: 40px 0;
+}
+.role-buttons button {
+  padding: 14px 25px;
+  margin: 10px;
+  border-radius: 10px;
+  border: none;
+  background: var(--teal);
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: var(--shadow);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.role-buttons button:hover {
+  background: var(--teal-dark);
+  transform: scale(1.05);
+}
+.role-buttons .selected {
+  background: var(--teal-dark);
+}
+
+/* FORM */
+.work-form-section {
+  max-width: 550px;
+  margin: auto;
+  margin-top: 20px;
+  padding: 25px;
+  background: var(--glass-bg);
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(15px);
+  box-shadow: var(--shadow);
+}
+.work-form input,
+.work-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+}
+.work-form button {
+  padding: 14px;
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: var(--shadow);
+}
+.work-form button:hover {
+  background: var(--teal-dark);
+}
+.success-msg {
+  margin-top: 10px;
+  color: #7fffce;
+}

@@ -177,6 +177,7 @@ label{
   font-size: 13px;
   color: var(--muted);
   font-weight: 600;
+  color: black;
 }
 
 input[type="text"],
@@ -192,7 +193,7 @@ select{
   color: #043838;
   transition: box-shadow var(--ease), transform var(--ease), border-color var(--ease);
   outline: none;
-  -webkit-appearance: none;
+  /* -webkit-appearance: none; */
 }
 
 /* textarea */

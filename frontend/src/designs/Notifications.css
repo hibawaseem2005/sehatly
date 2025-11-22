@@ -1,0 +1,190 @@
+/* src/designs/Notifications.css */
+
+/* Full page container */
+.reminder-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0f2f5; /* light matte background */
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Card */
+.reminder-card {
+  background: #ffffff;
+  padding: 2.5rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 500px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reminder-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+}
+
+/* Title */
+.title {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+/* Title icon color */
+.title svg {
+  color: #ff6f61; /* coral for Medicine Reminder icon */
+  margin-right: 0.5rem;
+}
+
+/* Subtitle */
+.subtitle {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+/* Subtitle icon color */
+.subtitle svg {
+  color: #03a9f4; /* light blue for Active Reminders icon */
+  margin-right: 0.5rem;
+}
+
+/* Input group */
+.input-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.input-group input,
+.input-group select {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #008080;
+}
+
+.input-group button {
+  background: #00bfa6;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background 0.2s ease;
+}
+
+.input-group button:hover {
+  background: #008080;
+}
+
+/* Reminder list */
+.reminder-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reminder-item {
+  background: #f8f8f8;
+  border-radius: 0.8rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  transition: background 0.2s ease;
+}
+
+.reminder-item:hover {
+  background: #e0f2f1;
+}
+
+/* Reminder actions */
+.reminder-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* Snooze button styles with colors */
+.snooze-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.2s ease;
+}
+
+.snooze-btn:nth-child(1) {
+  background: #ff9800; /* orange */
+}
+
+.snooze-btn:nth-child(1):hover {
+  background: #fb8c00;
+}
+
+.snooze-btn:nth-child(2) {
+  background: #03a9f4; /* light blue */
+}
+
+.snooze-btn:nth-child(2):hover {
+  background: #039be5;
+}
+
+/* Dismiss button style */
+.dismiss-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #f44336; /* red */
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dismiss-btn:hover {
+  background: #d32f2f;
+}
+
+/* Empty message */
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 1rem 0;
+  font-style: italic;
+}
