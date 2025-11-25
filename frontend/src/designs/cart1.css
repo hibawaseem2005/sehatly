@@ -116,7 +116,7 @@ body{background:var(--bg);font-family:Inter, "Poppins", system-ui, -apple-system
 /* Promo */
 .promo-box{display:flex;gap:8px;align-items:center}
 .promo-box input{flex:1;padding:10px;border-radius:8px;border:1px solid #e5ece8}
-.promo-box button{padding:10px;border-radius:8px;border:none;background:var(--blue);color:white;cursor:pointer}
+.promo-box button{padding:10px;border-radius:8px;border:none;color:white;cursor:pointer}
 .applied{color:var(--success)}
 
 /* Summary panel */
@@ -154,6 +154,88 @@ body{background:var(--bg);font-family:Inter, "Poppins", system-ui, -apple-system
 
 /* Empty */
 .cart-empty{padding:40px;text-align:center;background:#fff;border-radius:12px;max-width:600px;margin:40px auto}
+.applyPromoBtn {
+  background: linear-gradient(90deg, #00bfa5, #008080); /* gradient teal */
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.applyPromoBtn:hover {
+  background: linear-gradient(90deg, #008080, #004d4d); /* darker gradient on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.applyPromoBtn:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.med-thumb {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.mini-thumb {
+  width: 50px;
+  height: 50px;
+  object-fit: cover; /* keeps aspect ratio */
+  border-radius: 5px; /* optional, rounded corners */
+}
+.modal-backdrop {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.confirm-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 16px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 16px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+
 
 /* Responsive */
 @media(max-width:1000px){

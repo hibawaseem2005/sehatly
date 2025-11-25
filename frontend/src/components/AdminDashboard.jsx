@@ -5,6 +5,8 @@ import CountUp from "react-countup";
 import socket from "../socket";
 import { Bar, Line } from "react-chartjs-2";
 import { motion, AnimatePresence } from "framer-motion";
+import ConflictingMedicines from "./ConflictingMedicines";
+
 import { Settings, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Chart as ChartJS,
@@ -342,216 +344,176 @@ export default function AdminDashboard() {
       </>
     );
   }
+  function VendorsContent() {
+    const [vendors, setVendors] = useState([]);
+    const [error, setError] = useState("");
 
+    useEffect(() => {
+      const fetchVendors = async () => {
+        try {
+          const res = await fetch("http://localhost:5000/api/vendor/vendors", {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${adminToken}`
+            },
+            withCredentials: true
+          });
 
-function VendorsContent() {
-  const [vendors, setVendors] = useState([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchVendors = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/vendor/vendors", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${adminToken}`
-          },
-          withCredentials: true
-        });
-
-        const data = await res.json();
-        if (!data.success) {
-          setError(data.message || "Failed to fetch vendors");
-        } else {
-          setVendors(data.vendors);
+          const data = await res.json();
+          if (!data.success) {
+            setError(data.message || "Failed to fetch vendors");
+          } else {
+            setVendors(data.vendors);
+          }
+        } catch (err) {
+          setError(err.message);
         }
+      };
+
+      fetchVendors();
+    }, []);
+
+    return (
+      <div className="p-6 bg-white rounded-2xl shadow-lg">
+        <h2 className="text-xl font-semibold mb-4">Approved Vendors</h2>
+
+        {error && <p className="text-red-500">{error}</p>}
+
+        {vendors.length === 0 && !error ? (
+          <p className="text-sm text-slate-500">No vendors yet.</p>
+        ) : (
+          <div className="grid gap-4">
+            {vendors.map((vendor) => (
+              <div
+                key={vendor._id}
+                className="p-4 bg-slate-50 rounded-lg shadow-sm flex flex-col gap-1"
+              >
+                <p className="font-semibold">{vendor.name}</p>
+                <p className="text-xs text-slate-500">{vendor.email}</p>
+
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+
+  }
+  function RequestsContent() {
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    //const adminToken = localStorage.getItem("adminToken");
+
+    useEffect(() => {
+      const fetchRequests = async () => {
+        setLoading(true);
+        try {
+          const res = await axios.get("http://localhost:5000/api/vendor/requests", {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${adminToken}`
+            },
+            withCredentials: true
+          });
+          setRequests(res.data.requests);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchRequests();
+    }, [adminToken]);
+
+      const handleApprove = async (reqId) => {
+      try {
+        await axios.post(
+          `http://localhost:5000/api/vendor/approve/${reqId}`,
+          {}, // POST body
+          {
+            headers: {
+              "Authorization": `Bearer ${adminToken}`
+            },
+            withCredentials: true
+          }
+        );
+
+        setRequests((prev) => prev.filter((r) => r._id !== reqId));
       } catch (err) {
-        setError(err.message);
+        console.error("Error approving request:", err);
       }
     };
 
-    fetchVendors();
-  }, []);
 
-  return (
-    <div className="p-6 bg-white rounded-2xl shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Approved Vendors</h2>
-
-      {error && <p className="text-red-500">{error}</p>}
-
-      {vendors.length === 0 && !error ? (
-        <p className="text-sm text-slate-500">No vendors yet.</p>
-      ) : (
-        <div className="grid gap-4">
-          {vendors.map((vendor) => (
-            <div
-              key={vendor._id}
-              className="p-4 bg-slate-50 rounded-lg shadow-sm flex flex-col gap-1"
-            >
-              <p className="font-semibold">{vendor.name}</p>
-              <p className="text-xs text-slate-500">{vendor.email}</p>
-
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-}
-function RequestsContent() {
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  //const adminToken = localStorage.getItem("adminToken");
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-      setLoading(true);
+    const handleReject = async (reqId) => {
       try {
-        const res = await axios.get("http://localhost:5000/api/vendor/requests", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${adminToken}`
-          },
-          withCredentials: true
-        });
-        setRequests(res.data.requests);
+        await axios.post(
+          `http://localhost:5000/api/vendor/reject/${reqId}`,
+          {}, // POST body (empty)
+          {
+            headers: {
+              "Authorization": `Bearer ${adminToken}`
+            },
+            withCredentials: true
+          }
+        );
+
+        setRequests((prev) => prev.filter((r) => r._id !== reqId));
       } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+        console.error("Error rejecting request:", err);
       }
     };
 
-    fetchRequests();
-  }, [adminToken]);
+    return (
+      <div className="p-6 bg-white rounded-2xl shadow-lg">
+        <h2 className="text-xl font-semibold mb-4">Vendor Requests</h2>
 
-    const handleApprove = async (reqId) => {
-    try {
-      await axios.post(
-        `http://localhost:5000/api/vendor/approve/${reqId}`,
-        {}, // POST body
-        {
-          headers: {
-            "Authorization": `Bearer ${adminToken}`
-          },
-          withCredentials: true
-        }
-      );
+        {loading ? (
+          <p className="text-sm text-slate-500">Loading requests...</p>
+        ) : requests.length ? (
+          <div className="grid gap-4">
+            {requests.map((req) => (
+              <div
+                key={req._id}
+                className="flex justify-between items-start p-4 rounded-lg bg-slate-50 shadow-sm"
+              >
+                <div className="space-y-1">
+                  <p className="font-semibold">{req.name}</p>
+                  <p className="text-xs text-slate-500">{req.email}</p>
+                  {req.phone && <p className="text-xs">Phone: {req.phone}</p>}
+                  {req.businessName && <p className="text-xs">Business: {req.businessName}</p>}
+                  {req.serviceType && <p className="text-xs">Service: {req.serviceType}</p>}
+                  {req.city && <p className="text-xs">City: {req.city}</p>}
+                  {req.website && <p className="text-xs">Website: {req.website}</p>}
+                  {req.message && <p className="text-xs">Message: {req.message}</p>}
+                </div>
 
-      setRequests((prev) => prev.filter((r) => r._id !== reqId));
-    } catch (err) {
-      console.error("Error approving request:", err);
-    }
-  };
-
-
-  const handleReject = async (reqId) => {
-    try {
-      await axios.post(
-        `http://localhost:5000/api/vendor/reject/${reqId}`,
-        {}, // POST body (empty)
-        {
-          headers: {
-            "Authorization": `Bearer ${adminToken}`
-          },
-          withCredentials: true
-        }
-      );
-
-      setRequests((prev) => prev.filter((r) => r._id !== reqId));
-    } catch (err) {
-      console.error("Error rejecting request:", err);
-    }
-  };
-
-  return (
-    <div className="p-6 bg-white rounded-2xl shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Vendor Requests</h2>
-
-      {loading ? (
-        <p className="text-sm text-slate-500">Loading requests...</p>
-      ) : requests.length ? (
-        <div className="grid gap-4">
-          {requests.map((req) => (
-            <div
-              key={req._id}
-              className="flex justify-between items-start p-4 rounded-lg bg-slate-50 shadow-sm"
-            >
-              <div className="space-y-1">
-                <p className="font-semibold">{req.name}</p>
-                <p className="text-xs text-slate-500">{req.email}</p>
-                {req.phone && <p className="text-xs">Phone: {req.phone}</p>}
-                {req.businessName && <p className="text-xs">Business: {req.businessName}</p>}
-                {req.serviceType && <p className="text-xs">Service: {req.serviceType}</p>}
-                {req.city && <p className="text-xs">City: {req.city}</p>}
-                {req.website && <p className="text-xs">Website: {req.website}</p>}
-                {req.message && <p className="text-xs">Message: {req.message}</p>}
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => handleApprove(req._id)}
+                    className="px-4 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleReject(req._id)}
+                    className="px-4 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition"
+                  >
+                    Reject
+                  </button>
+                </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500">No vendor requests at the moment</p>
+        )}
+      </div>
+    );
+  }
 
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => handleApprove(req._id)}
-                  className="px-4 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleReject(req._id)}
-                  className="px-4 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition"
-                >
-                  Reject
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-slate-500">No vendor requests at the moment</p>
-      )}
-    </div>
-  );
-}
-function DonationsContent() {
-  const [donations, setDonations] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    axios
-      .get("/api/admin/donations", { withCredentials: true })
-      .then(res => {
-        setDonations(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
-
-  return (
-    <div className="p-6 bg-white rounded-2xl shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Donations</h2>
-      {loading ? (
-        <p className="text-sm text-slate-500">Loading donations...</p>
-      ) : donations.length ? (
-        <div className="grid gap-3">
-          {donations.map(d => (
-            <div key={d._id} className="flex justify-between items-center p-3 rounded-lg bg-slate-50">
-              <div>
-                <p className="font-semibold">{d.name}</p>
-                <p className="text-xs text-slate-500">Amount: ${d.amount}</p>
-              </div>
-              <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg">View Details</button>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-slate-500">No donations at the moment</p>
-      )}
-    </div>
-  );
-}
 
   return (
       <div className="min-h-screen p-6 bg-gradient-to-b from-slate-50 via-white to-slate-100 font-inter">
@@ -575,7 +537,7 @@ function DonationsContent() {
               <div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Sehatly Admin • Analytics</h1>
                 <p className="text-sm text-slate-500 mt-1">
-                  A lavish, highly-interactive dashboard with animated insights.
+                  View all the progress sehatly has made.
                 </p>
               </div>
             </div>
@@ -592,7 +554,7 @@ function DonationsContent() {
           <div className="flex gap-6">
             {/* Sidebar */}
             <aside className="sidebar bg-white shadow-lg rounded-2xl p-5 w-64 flex flex-col gap-4">
-              {["Analytics", "Vendors", "Requests", "Donations"].map(tab => (
+              {["Analytics", "Vendors", "Requests", "Conflicts"].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setSelectedTab(tab)}
@@ -606,6 +568,7 @@ function DonationsContent() {
                   {tab}
                 </button>
               ))}
+
             </aside>
 
             {/* Main content */}
@@ -624,7 +587,9 @@ function DonationsContent() {
 
               {selectedTab === "Vendors" && <VendorsContent />}
               {selectedTab === "Requests" && <RequestsContent />}
-              {selectedTab === "Donations" && <DonationsContent />}
+              {selectedTab === "Conflicts" && <ConflictingMedicines />}
+
+
             </main>
           </div>
         </div>

@@ -54,5 +54,20 @@ router.post("/create-payment", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+router.post("/verify-session", async (req, res) => {
+  try {
+    const { session_id } = req.body;
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (session.payment_status === "paid") {
+      res.json({ success: true, paid: true });
+    } else {
+      res.json({ success: true, paid: false });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 export default router;

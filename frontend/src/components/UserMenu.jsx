@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { FaUserCircle } from "react-icons/fa"; // <-- added React Icon
+import { FaUserCircle } from "react-icons/fa";
 
 const UserMenu = () => {
   const { user, logout } = useContext(AuthContext);
@@ -45,73 +45,104 @@ const UserMenu = () => {
 
   return (
     <div ref={menuRef} style={{ position: "relative", display: "inline-block" }}>
+      {/* User Icon */}
       <button
         onClick={() => setOpen(!open)}
         style={{
-          background: "white",
+          background: "#f0f8ff",
           color: "#007bff",
           border: "none",
           borderRadius: "50%",
-          width: "35px",
-          height: "35px",
-          fontSize: "20px",
+          width: "45px",
+          height: "45px",
+          fontSize: "24px",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontWeight: "bold",
+          transition: "transform 0.2s, box-shadow 0.2s",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
-        <FaUserCircle size={22} /> {/* <-- replaced emoji with React Icon */}
+        <FaUserCircle size={28} />
       </button>
 
+      {/* Dropdown Menu */}
       {open && user && (
         <div
           style={{
             position: "absolute",
-            top: "40px",
+            top: "55px",
             right: 0,
-            background: "white",
-            border: "1px solid #ccc",
-            borderRadius: "5px",
-            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+            background: "#ffffff",
+            borderRadius: "12px",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
             zIndex: 1000,
-            minWidth: "160px",
+            minWidth: "200px",
+            overflow: "hidden",
+            fontFamily: "'Inter', sans-serif",
           }}
         >
-          <p
+          {/* Header */}
+          <div
             style={{
-              margin: 0,
-              padding: "10px",
+              padding: "15px",
               borderBottom: "1px solid #eee",
-              fontSize: "0.9rem",
+              fontSize: "0.95rem",
+              color: "#555",
+              backgroundColor: "#f7faff",
             }}
           >
-            Logged in as: {user.email}
-          </p>
+            Logged in as
+            <br />
+            <span style={{ fontWeight: "600", color: "#007bff" }}>{user.email}</span>
+          </div>
+
+          {/* Logout Button */}
           <button
             onClick={logout}
             style={{
               display: "block",
               width: "100%",
-              padding: "10px",
+              padding: "12px 15px",
               border: "none",
               background: "transparent",
+              textAlign: "left",
               cursor: "pointer",
+              transition: "background 0.2s",
+              color: "#007bff",
+              fontWeight: "500",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f8ff")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
             Log out
           </button>
+
+          {/* Delete Account */}
           <button
             onClick={handleDelete}
             style={{
               display: "block",
               width: "100%",
-              padding: "10px",
+              padding: "12px 15px",
               border: "none",
               background: "transparent",
-              color: "red",
+              textAlign: "left",
               cursor: "pointer",
+              transition: "background 0.2s, color 0.2s",
+              color: "#ff4d4f",
+              fontWeight: "500",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#fff1f0";
+              e.currentTarget.style.color = "#d4380d";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#ff4d4f";
             }}
           >
             Delete account

@@ -82,6 +82,7 @@ const MedicinesList = () => {
       price: Number(med.price),
       brand: med.brand,
       quantity: 1,
+      image: med.image 
     });
   };
 
@@ -99,13 +100,7 @@ const MedicinesList = () => {
 
   return (
     <div className="sehatly-root lavish-sectioned">
-      {/* Topbar */}
-      <header className="topbar">
-        <div className="topbar-inner">
-          
-          <div className="top-contact">📞 (+1) 850 315 9426</div>
-        </div>
-      </header>
+
 
       {/* Hero Section */}
       <section className="hero-section">
@@ -222,7 +217,8 @@ const MedicinesList = () => {
           <div className="products-grid">
            {currentItems.map((med) => (
               <article key={med._id || med.id} className="product-card">
-                {/* <img src={med.image} alt={med.name} className="product-img"/> */}
+                <img src={`http://localhost:5000/${med.image}`} alt={med.name} />
+
                 <div className="card-body">
                   <h4>{med.name}</h4>
                   <p className="brand">{med.brand}</p>

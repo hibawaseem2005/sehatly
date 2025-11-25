@@ -4,7 +4,7 @@ import "../designs/WorkWithSehatly.css";
 import axios from "axios";
 
 export default function WorkWithSehatly() {
-  const [role, setRole] = useState(""); // vendor or donor
+  const [role, setRole] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -17,7 +17,8 @@ export default function WorkWithSehatly() {
     donationAmount: "",
     volunteer: false,
   });
-  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleRoleSelect = (selectedRole) => setRole(selectedRole);
 
@@ -26,15 +27,18 @@ export default function WorkWithSehatly() {
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setSubmitted(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSuccess(false); // hide previous success
+    setLoading(true);
 
-  try {
-    if (role === "vendor") {
-      const response = await axios.post(
-        "http://localhost:5000/api/vendor/request",
-        {
+    const minLoadingTime = 1500; // overlay minimum visible duration
+    const startTime = Date.now();
+
+    try {
+      let response;
+      if (role === "vendor") {
+        response = await axios.post("http://localhost:5000/api/vendor/request", {
           name: form.name,
           email: form.email,
           phone: form.phone,
@@ -43,52 +47,68 @@ const handleSubmit = async (e) => {
           city: form.city,
           website: form.website,
           message: form.message,
-        }
-      );
+        });
+      } else if (role === "donor") {
+        response = await axios.post("http://localhost:5000/api/donations", {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          donationAmount: form.donationAmount,
+          volunteer: form.volunteer,
+          message: form.message,
+        });
+      }
 
       if (response.data.success) {
-        alert("✅ Your request has been submitted! Please wait for our response.");
+        setSuccess(true); // show success
+        setTimeout(() => setSuccess(false), 3000); // hide after 3s
       }
-    } else if (role === "donor") {
-      const response = await axios.post("http://localhost:5000/api/donations", {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        donationAmount: form.donationAmount,
-        volunteer: form.volunteer,
-        message: form.message,
+
+      // reset form
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        message: "",
+        businessName: "",
+        serviceType: "",
+        city: "",
+        website: "",
+        donationAmount: "",
+        volunteer: false,
       });
-
-      if (response.data.success) {
-        alert("✅ Thank you for your contribution!");
-      }
+      setRole("");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Something went wrong!");
+    } finally {
+      const elapsed = Date.now() - startTime;
+      const remainingTime = Math.max(minLoadingTime - elapsed, 0);
+      setTimeout(() => setLoading(false), remainingTime); // ensure overlay visible for minLoadingTime
     }
-
-    setForm({
-      name: "",
-      email: "",
-      phone: "",
-      message: "",
-      businessName: "",
-      serviceType: "",
-      city: "",
-      website: "",
-      donationAmount: "",
-      volunteer: false,
-    });
-    setRole("");
-    setSubmitted(false);
-  } catch (err) {
-    console.error(err); // important to see exact server error
-    alert(err.response?.data?.message || "Something went wrong!");
-    setSubmitted(false);
-  }
-};
-
-
+  };
 
   return (
     <div className="work-page">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loader"></div>
+            <p>Your request is processing...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Success Overlay */}
+      {success && (
+        <div className="success-overlay">
+          <div className="success-content">
+            ✔ Request submitted successfully!
+          </div>
+        </div>
+      )}
+
       {/* HERO */}
       <motion.section
         className="work-hero"
@@ -228,7 +248,6 @@ const handleSubmit = async (e) => {
             )}
 
             <button type="submit">Submit Request</button>
-            {submitted && <p className="success-msg">✔ Form submitted successfully! Please wait for our response.</p>}
           </form>
         </motion.section>
       )}

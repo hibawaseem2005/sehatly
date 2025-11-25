@@ -27,6 +27,10 @@ export default function Cart() {
   const [pharmacyNote, setPharmacyNote] = useState("");
   const [deliveryInstruction, setDeliveryInstruction] = useState("Leave at door");
   const [saveAddress, setSaveAddress] = useState(false);
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [conflictPairs, setConflictPairs] = useState([]);
+  const [confirmCallback, setConfirmCallback] = useState(null);
+
 
   const [deliveryETA, setDeliveryETA] = useState("40 minutes");
 
@@ -90,77 +94,152 @@ export default function Cart() {
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
   const goToStep = (s) => setStep(s);
 
-  const handleCheckout = async () => {
-    if (!user || !token) {
-      alert("Please log in before placing an order.");
-      return;
-    }
-    // Basic validation
-    if (!fullName || !address || !phone) {
-      alert("Please complete name, address and phone.");
-      setStep(2);
-      return;
-    }
+const handleCheckout = async () => {
+  console.log("=== Checkout Started ===");
 
-    setLoading(true);
+  // 1️⃣ User login check
+  if (!user || !token) {
+    alert("Please log in before placing an order.");
+    console.log("Checkout stopped: user not logged in");
+    return;
+  }
 
-    const payload = {
-      items: cart.map((item) => ({
-        name: item.name,
-        price: Number(item.price),
-        quantity: Number(item.quantity),
-      })),
-      totalPrice: Number(totalWithDelivery.toFixed(2)),
-      deliveryFee: deliveryFees[deliveryETA] || 0,
-      customer: {
-        fullName,
-        email,
-        address,
-        city,
-        phone,
-        emergencyContact,
-        riderMsg,
-        pharmacyNote,
-        deliveryInstruction,
-        deliveryETA,
-        saveAddress,
-      },
-      promo: promoApplied,
-      hasPrescription: !!prescriptionFile,
-    };
+  // 2️⃣ Log current form states for debugging
+  console.log("fullName:", fullName);
+  console.log("address:", address);
+  console.log("phone:", phone);
+  console.log("cart items:", cart.map((i) => i.name));
 
-    try {
-      if (paymentMethod === "card") {
-        const res = await fetch("http://localhost:5000/api/payments/create-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(payload),
-        });
+  // 3️⃣ Basic validation (trim to avoid spaces-only)
+  if (!fullName?.trim() || !address?.trim() || !phone?.trim()) {
+    alert("Please complete name, address and phone.");
+    setStep(2);
+    console.log("Checkout stopped: missing form fields");
+    return;
+  }
 
-        const data = await res.json();
-        if (data.url) window.location.href = data.url;
-        else alert("Payment failed.");
-      } else {
-        const res = await fetch("http://localhost:5000/api/orders/cod", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          alert("Order placed successfully.");
-          clearCart();
-          setStep(4);
-        } else alert("COD order failed");
+  // 4️⃣ Medicine interaction check
+  try {
+    const interactionRes = await fetch(
+      "http://localhost:5000/api/incompatible/check",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          medicines: cart.map((item) => item.name),
+        }),
       }
-    } catch (err) {
-      console.error(err);
-      alert("Checkout error");
-    } finally {
-      setLoading(false);
+    );
+
+    const interactionData = await interactionRes.json();
+    console.log("Interaction check response:", interactionData);
+
+    if (interactionData.conflict && interactionData.pairs.length > 0) {
+      // Save conflicting pairs to state to display in modal
+      setConflictPairs(interactionData.pairs);
+
+      // Prepare what happens if user confirms
+      setConfirmCallback(() => async () => {
+        setShowConflictModal(false); // hide modal
+        await placeOrder();          // call the function that handles actual checkout
+      });
+
+      // Show the modal
+      setShowConflictModal(true);
+
+      console.log("Checkout paused: medicine interaction conflict");
+      return; // Stop checkout for now
     }
+  } catch (err) {
+    console.error("Interaction check failed:", err);
+    alert("Could not verify medicine interactions. Please try again.");
+    return;
+  }
+};
+
+const placeOrder = async () => {
+  console.log("Placing order...");
+  // 5️⃣ Continue checkout normally
+  setLoading(true);
+
+  const payload = {
+    items: cart.map((item) => ({
+      name: item.name,
+      price: Number(item.price),
+      quantity: Number(item.quantity),
+    })),
+    totalPrice: Number(totalWithDelivery.toFixed(2)),
+    deliveryFee: deliveryFees[deliveryETA] || 0,
+    customer: {
+      fullName: fullName.trim(),
+      email,
+      address: address.trim(),
+      city,
+      phone: phone.trim(),
+      emergencyContact,
+      riderMsg,
+      pharmacyNote,
+      deliveryInstruction,
+      deliveryETA,
+      saveAddress,
+    },
+    promo: promoApplied,
+    hasPrescription: !!prescriptionFile,
   };
+
+  try {
+    if (paymentMethod === "card") {
+      const res = await fetch(
+        "http://localhost:5000/api/payments/create-payment",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+      console.log("Card payment response:", data);
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Payment failed.");
+        console.log("Checkout failed: card payment error");
+      }
+    } else {
+      const res = await fetch("http://localhost:5000/api/orders/cod", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      console.log("COD order response:", data);
+
+      if (data.success) {
+        alert("Order placed successfully.");
+        clearCart();
+        setStep(4);
+      } else {
+        alert("COD order failed");
+        console.log("Checkout failed: COD order error");
+      }
+    }
+  } catch (err) {
+    console.error("Checkout error:", err);
+    alert("Checkout error");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (!cart || cart.length === 0) {
     return <p className="cart-empty">Your cart is empty — add some medicines to continue.</p>;
@@ -198,7 +277,7 @@ export default function Cart() {
               <div className="cards-grid">
                 {cart.map((item) => (
                   <div key={item._id} className="med-card">
-                    <div className="med-thumb" />
+                    <img src={item.image} alt={item.name} className="med-thumb" />
                     <div className="med-main">
                       <div className="med-title">{item.name}</div>
                       <div className="med-sub">Category: Medicine</div>
@@ -375,7 +454,7 @@ export default function Cart() {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                   />
-                  <button onClick={tryApplyPromo}>Apply</button>
+                  <button className="applyPromoBtn" onClick={tryApplyPromo}>Apply</button>
                   {promoApplied && <small className="applied">Applied: {promoApplied.code} - {promoApplied.percent}%</small>}
                 </div>
 
@@ -457,7 +536,6 @@ export default function Cart() {
           <div className="mini-list">
             {cart.map((it) => (
               <div key={it._id} className="mini-item">
-                <div className="mini-thumb" />
                 <div className="mini-info">
                   <div className="mini-name">{it.name}</div>
                   <div className="muted">Qty: {it.quantity}</div>
@@ -479,7 +557,30 @@ export default function Cart() {
             <button className="secondary full" onClick={() => goToStep(1)}>Edit Items</button>
           </div>
         </aside>
+
       </div>
+      {showConflictModal && (
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <h3>⚠️ Medicine Interaction Warning</h3>
+            <p>The following medicines should not be taken together:</p>
+            <ul>
+              {conflictPairs.map((pair, idx) => (
+                <li key={idx}>{pair[0]} + {pair[1]}</li>
+              ))}
+            </ul>
+            <div className="modal-actions">
+              <button className="confirm-btn" onClick={confirmCallback}>
+                Confirm Order
+              </button>
+              <button className="cancel-btn" onClick={() => setShowConflictModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
   );
 }

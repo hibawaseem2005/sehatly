@@ -14,6 +14,8 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import WorkWithSehatly from "./components/WorkWithSehatly";
 import Notifications from "./components/Notifications";
+import AdminAuthentication from "./components/AdminAuthentication.jsx";
+import Success from "./components/Success.jsx"; 
 
 
 function App() {
@@ -41,6 +43,9 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/work-with-sehatly" element={<WorkWithSehatly />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/adminAuthentication" element={<AdminAuthentication />} />
+            <Route path="/success" element={<Success />} />
+
           </Routes>
 
         </Router>

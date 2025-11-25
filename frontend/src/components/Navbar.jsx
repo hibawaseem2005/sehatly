@@ -10,6 +10,7 @@ import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 const Navbar = () => {
   const { user } = useContext(AuthContext);
@@ -37,9 +38,25 @@ const Navbar = () => {
       <h2 style={styles.logo} onClick={() => navigate("/")}>
         💊 Sehatly
       </h2>
-
+      
       {/* Right side icons */}
       <div style={styles.right}>
+        {/* Admin Verification */}
+        <div
+          style={{
+            ...styles.iconWrapper,
+            transform: hoveredIcon === "admin" ? "scale(1.15)" : "scale(1)",
+            backgroundColor:
+              hoveredIcon === "admin" ? "rgba(255,255,255,0.18)" : "transparent",
+          }}
+          onClick={() => navigate("/adminAuthentication")} // replace with your admin route
+          title="Admin Verification"
+          onMouseEnter={() => handleMouseEnter("admin")}
+          onMouseLeave={handleMouseLeave}
+        >
+          <VerifiedUserIcon sx={{ fontSize: 26}} /> 
+        </div>
+
         {/* Medicines */}
         <div
           style={{

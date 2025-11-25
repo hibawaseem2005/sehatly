@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Plus, ChevronDown } from "lucide-react";
 import "../designs/AddMedicine.css";
 
@@ -26,12 +26,24 @@ const AddMedicine = () => {
     price: "",
     discount: "",
     stockQuantity: "",
-    req_prescription: false, // Added field
+    req_prescription: false,
+    imageFile: null,
+    imagePreview: null,
   });
+
+  const fileInputRef = useRef(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
+  };
+
+  const handleImageFile = (file) => {
+    setFormData({
+      ...formData,
+      imageFile: file,
+      imagePreview: URL.createObjectURL(file),
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -49,13 +61,21 @@ const AddMedicine = () => {
         return;
       }
 
+      const form = new FormData();
+      form.append("name", formData.name);
+      form.append("brand", formData.brand);
+      form.append("description", formData.description);
+      form.append("category_id", formData.category_id);
+      form.append("price", formData.price);
+      form.append("discount", formData.discount);
+      form.append("stockQuantity", formData.stockQuantity);
+      form.append("req_prescription", formData.req_prescription);
+      if (formData.imageFile) form.append("image", formData.imageFile);
+
       const res = await fetch("http://localhost:5000/api/medicines/add", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
       });
 
       const data = await res.json();
@@ -72,6 +92,8 @@ const AddMedicine = () => {
           discount: "",
           stockQuantity: "",
           req_prescription: false,
+          imageFile: null,
+          imagePreview: null,
         });
       } else alert("Error: " + data.message);
     } catch (err) {
@@ -116,7 +138,6 @@ const AddMedicine = () => {
             <label>Description</label>
             <textarea name="description" value={formData.description} onChange={handleChange} required />
 
-            {/* Prescription checkbox */}
             <div className="checkbox-wrapper">
               <label>
                 <input
@@ -129,11 +150,46 @@ const AddMedicine = () => {
               </label>
             </div>
 
+            {/* Right side image upload */}
+            <div className="image-upload-panel">
+              <h2>Upload Medicine Image</h2>
+              <div
+                className="image-drop-box"
+                onClick={() => fileInputRef.current.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleImageFile(e.dataTransfer.files[0]);
+                  }
+                }}
+              >
+                {formData.imagePreview ? (
+                  <img
+                    src={formData.imagePreview}
+                    alt="Preview"
+                    style={{ width: "150px", height: "150px", objectFit: "contain" }}
+                  />
+                ) : (
+                  <p>Drag & Drop or Click to Upload</p>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  ref={fileInputRef}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) handleImageFile(e.target.files[0]);
+                  }}
+                />
+              </div>
+            </div>
+
             <h2 className="section-head">Pricing & Stock</h2>
 
             <div className="input-grid">
               <div>
-                <label>Price (Rs.)</label>
+                <label>Price (USD)</label>
                 <input type="number" name="price" value={formData.price} onChange={handleChange} required />
               </div>
 
@@ -167,8 +223,15 @@ const AddMedicine = () => {
               <h3>Recently Added</h3>
               <p><strong>{recentlyAdded.name}</strong></p>
               <p>{recentlyAdded.brand}</p>
-              <p>Rs. {recentlyAdded.price}</p>
+              <p>USD {recentlyAdded.price}</p>
               <p>{recentlyAdded.req_prescription ? "Prescription Required" : "No Prescription"}</p>
+              {recentlyAdded.image && (
+                <img
+                  src={`http://localhost:5000${recentlyAdded.image}`}
+                  alt={recentlyAdded.name}
+                  style={{ width: "120px", height: "120px", objectFit: "contain", marginTop: "10px" }}
+                />
+              )}
             </div>
           )}
         </div>

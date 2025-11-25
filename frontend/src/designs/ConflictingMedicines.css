@@ -1,0 +1,88 @@
+/* frontend/src/designs/ConflictingMedicines.css */
+
+.conflict-container {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-family: 'Inter', sans-serif;
+}
+
+.conflict-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #111827;
+}
+
+.conflict-loading,
+.conflict-empty {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.conflict-error {
+  color: #dc2626;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.conflict-dropdowns {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+.conflict-dropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.conflict-dropdown label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.conflict-dropdown select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  min-width: 150px;
+}
+
+.add-conflict-btn {
+  background-color: #0d9488; /* teal */
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-conflict-btn:hover:not(:disabled) {
+  background-color: #0f766e; /* darker teal on hover */
+}
+
+.add-conflict-btn:disabled {
+  background-color: #81e6d9; /* lighter teal when disabled */
+  cursor: not-allowed;
+}
+
+
+.conflict-list {
+  display: grid;
+  gap: 8px;
+}
+
+.conflict-card {
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+  color: #111827;
+}

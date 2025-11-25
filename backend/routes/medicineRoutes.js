@@ -8,7 +8,7 @@ const router = express.Router();
 // Configure multer to store uploaded images
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // make sure this folder exists
+    cb(null, "public/images/medicines"); // make sure this folder exists
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + path.extname(file.originalname)); // unique filename
@@ -17,24 +17,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // 🧑‍⚕️ Vendor: Add new medicine
-// 🧑‍⚕️ Vendor: Add new medicine
 router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
   try {
     console.log("ADD MED - req.body:", req.body);
     console.log("ADD MED - req.file:", req.file);
 
-    const {
-      name,
-      brand,
-      description,
-      category_id,
-      price,
-      discount,
-      stockQuantity,
-      req_prescription,
-    } = req.body;
+    const { name, brand, description, category_id, price, discount, stockQuantity, req_prescription } = req.body;
 
-    // ✅ Step 1: Verify medicine via FDA API
     const verifyWithFDA = async (medName) => {
       try {
         const fields = ["brand_name", "generic_name", "substance_name"];
@@ -52,11 +41,9 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
       }
     };
 
-
-
     const isAuthentic = await verifyWithFDA(name);
 
-    // ✅ Step 2: Create new medicine with verified status
+    // ✅ Save full relative path for image
     const newMed = new Medicine({
       name,
       brand,
@@ -67,9 +54,9 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
       stockQuantity,
       req_prescription,
       vendorId: req.user.userId,
-      image: req.file ? req.file.filename : null,
-      verified: isAuthentic,           // true/false based on FDA
-      status: isAuthentic ? "approved" : "pending", // auto approved or pending
+      image: req.file ? `images/medicines/${req.file.originalname}` : null, // keep original filename
+      verified: isAuthentic,
+      status: isAuthentic ? "approved" : "pending",
       addedAt: new Date(),
     });
 
@@ -85,6 +72,7 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 
 // 🧑‍⚕️ Vendor: View only their medicines

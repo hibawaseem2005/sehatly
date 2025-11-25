@@ -3,7 +3,6 @@ import express from "express";
 import Order from "../models/orders.js";
 import OrderDetail from "../models/orderdetails.js";
 import User from "../models/user.js";
-import Medicine from "../models/medicine.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -142,13 +141,13 @@ router.get("/growth-rate", async (req, res) => {
     const last30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const prev30 = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-    const revenueLast30 = (await Order.find({ date: { $gte: last30 } })).reduce(
+    const revenueLast30 = (await Order.find({ createdAt: { $gte: last30 } })).reduce(
       (sum, o) => sum + toNumber(o.totalPrice),
       0
     );
 
     const revenuePrev30 = (
-      await Order.find({ date: { $gte: prev30, $lt: last30 } })
+      await Order.find({ createdAt: { $gte: prev30, $lt: last30 } })
     ).reduce((sum, o) => sum + toNumber(o.totalPrice), 0);
 
     const growthRate = revenuePrev30 ? ((revenueLast30 - revenuePrev30) / revenuePrev30) * 100 : 0;

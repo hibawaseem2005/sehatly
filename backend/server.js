@@ -19,7 +19,9 @@ import { Server } from "socket.io";
 import vendorRoutes from "./routes/vendorRoutes.js";
 import cookieParser from "cookie-parser";
 import reminderRoutes from "./routes/reminderRoutes.js";
-
+import webhookRoutes from "./routes/stripeWebhook.js";
+import verifySession from "./routes/paymentRoutes.js";
+import incompatibleRoutes from "./routes/incompatible.js";
 dotenv.config();
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -163,17 +165,23 @@ app.get("/cart", verifyToken, async (req, res) => {
 });
 
 // Use your routes
+app.use("/images", express.static("public/images"));
 app.use("/api/auth", authRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/medicines", medicineRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/admin/analytics", adminAnalyticsRoutes);
+app.use("/api/admin", adminAnalyticsRoutes);
 app.use("/api/admin", adminMetricsRoutes);
 app.use("/api/vendor", vendorRoutes);
 app.use(cookieParser());
 app.use("/api/reminders", reminderRoutes);
+app.use("/api/stripe", webhookRoutes);
+app.use('/api/payments', verifySession);
+app.use("/api/incompatible", incompatibleRoutes);
+
+
 // ================== SOCKET.IO ================== //
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
