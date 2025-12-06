@@ -277,7 +277,12 @@ const placeOrder = async () => {
               <div className="cards-grid">
                 {cart.map((item) => (
                   <div key={item._id} className="med-card">
-                    <img src={item.image} alt={item.name} className="med-thumb" />
+                    <img
+                      src={`http://localhost:5000/${item.image}`}
+                      alt={item.name}
+                      className="med-thumb"
+                    />
+
                     <div className="med-main">
                       <div className="med-title">{item.name}</div>
                       <div className="med-sub">Category: Medicine</div>
