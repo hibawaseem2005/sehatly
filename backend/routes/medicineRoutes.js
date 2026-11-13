@@ -1,3 +1,4 @@
+// addmedicine.jsx
 import express from "express";
 import Medicine from "../models/medicine.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
@@ -23,7 +24,17 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
     console.log("ADD MED - req.file:", req.file);
 
     const { name, brand, description, category_id, price, discount, stockQuantity, req_prescription } = req.body;
+    // 🔴 Check for duplicate medicine
+    const existingMedicine = await Medicine.findOne({
+      name: name,
+      brand: brand
+    });
 
+    if (existingMedicine) {
+      return res.status(400).json({
+        message: "Duplicate medicine already exists"
+      });
+    }
     const verifyWithFDA = async (medName) => {
       try {
         const fields = ["brand_name", "generic_name", "substance_name"];
@@ -69,8 +80,14 @@ router.post("/add", verifyToken, upload.single("image"), async (req, res) => {
       medicine: newMed,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "Duplicate medicine already exists"
+      });
+    }
+
     res.status(500).json({ message: error.message });
-  }
+      }
 });
 
 

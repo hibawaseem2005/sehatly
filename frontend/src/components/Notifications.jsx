@@ -46,7 +46,14 @@ const Notifications = () => {
     const ms = unit === "hours" ? value * 60 * 60 * 1000 : value * 60 * 1000;
     return new Date(Date.now() + ms);
   };
+  useEffect(() => {
+    // Only for testing TC20
+    const nextHour = calculateNext(1, "hours");
+    console.log("TC20: 1 hour from now →", nextHour);
 
+    const nextMinute = calculateNext(1, "minutes");
+    console.log("TC20: 1 minute from now →", nextMinute);
+  }, []); // run once when component mounts
   const handleAddReminder = async () => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Please login");
@@ -88,23 +95,46 @@ const Notifications = () => {
   };
 
   const dismissReminder = async (id) => {
-    if (!window.confirm("Remove this reminder?")) return;
+    if (!window.confirm("Remove this reminder?")) {
+      console.log("TC18: Cancel dismissed by user");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
+      console.log(`TC19: Attempting to delete reminder ID: ${id}`);
       await axios.delete(`${API_BASE}/reminders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setReminders((prev) => prev.filter((r) => r._id !== id));
+      //setReminders((prev) => prev.filter((r) => r._id !== id));
+    setReminders((prev) =>
+      prev.filter((r, index) => {
+       
+        console.log(`Iteration ${index + 1}: Checking "${r.medicine}"`);
+        if (r._id === id) {
+          console.log(`Iteration ${index + 1}: Removing "${r.medicine}"`);
+          return false; // remove this reminder
+        }
+
+        return true; // keep other reminders
+      })
+    );
+
     } catch (err) {
       console.error(err);
+      console.error("Error deleting reminder:", err);
     }
   };
 
   const triggerLocal = (med) => {
     if (Notification.permission === "granted") {
       new Notification("💊 Medicine Reminder", { body: `Time to take ${med}!` });
+      
     }
-    if (soundRef.current) soundRef.current.play().catch(() => {});
+    if (soundRef.current) {
+      const p = soundRef.current.play();
+      if (p && p.catch) p.catch(() => {});
+    }
   };
 
   useEffect(() => {
@@ -114,15 +144,28 @@ const Notifications = () => {
         if (now >= new Date(r.nextTrigger)) {
           triggerLocal(r.medicine);
           const newNext = calculateNext(r.timeValue, r.timeUnit);
-
+          
           const token = localStorage.getItem("token");
           try {
+            console.log("Calling API...");
             const res = await axios.put(
               `${API_BASE}/reminders/${r._id}`,
               { nextTrigger: newNext },
               { headers: { Authorization: `Bearer ${token}` } }
             );
-            setReminders((prev) => prev.map((x) => (x._id === r._id ? res.data : x)));
+            //setReminders((prev) => prev.map((x) => (x._id === r._id ? res.data : x)));
+            setReminders((prev) =>
+              prev.filter((x) => {
+                console.log("Checking:", x.medicine);
+
+                if (x._id === r._id) {
+                  console.log("Removing:", x.medicine);
+                  return false; // remove
+                }
+
+                return true;
+              })
+            );
           } catch (err) {
             console.error(err);
           }

@@ -55,7 +55,7 @@ export default function Cart() {
     if (!updateQuantity || typeof updateQuantity !== "function") {
       // graceful fallback: alert small UI hint
       alert(
-        "Quantity update is not enabled. Add `updateQuantity(id, qty)` to your CartContext provider to enable quantity changes."
+        "Cannot update quantity."
       );
       return;
     }
@@ -149,6 +149,8 @@ const handleCheckout = async () => {
 
       console.log("Checkout paused: medicine interaction conflict");
       return; // Stop checkout for now
+    }else{
+      await placeOrder();
     }
   } catch (err) {
     console.error("Interaction check failed:", err);

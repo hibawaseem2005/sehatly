@@ -59,7 +59,7 @@ router.post("/approve/:id", verifyAdmin, async (req, res) => {
       from: process.env.EMAIL_USER,
       to: request.email,
       subject: "Your Vendor Account Approved",
-      text: `Hello ${request.name},\n\nYour account is approved.\nEmail: ${request.email}\nPassword: ${password}`
+      text: `Hello ${request.name},\n\nYour Sehatly  Vendor Account is approved. Kindly use the provided E-mail and Password to login to your portal.\nEmail: ${request.email}\nPassword: ${password}`
     });
 
     await request.deleteOne();

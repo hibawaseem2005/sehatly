@@ -39,11 +39,17 @@ const AddMedicine = () => {
   };
 
   const handleImageFile = (file) => {
-    setFormData({
-      ...formData,
-      imageFile: file,
-      imagePreview: URL.createObjectURL(file),
-    });
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      setFormData((prev) => ({
+        ...prev,
+        imageFile: file,
+        imagePreview: e.target.result, // base64 (no blob error)
+      }));
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -55,7 +61,7 @@ const AddMedicine = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("vendorToken");
       if (!token) {
         alert("Please login first!");
         return;
@@ -101,6 +107,54 @@ const AddMedicine = () => {
       alert("Something went wrong!");
     }
   };
+  const handleDrop = (e) => {
+    e.preventDefault();
+
+    // const files = e.dataTransfer?.files;
+    const files = null;
+    // ✅ TC14: files is null/undefined
+    if (!files) {
+      console.log("TC14: files is null or undefined");
+      return;
+    }
+
+    // ✅ TC13: files exists but empty OR no valid file
+    if (files.length === 0 || !files[0]) {
+      console.log("TC13: Empty file list dropped");
+      return;
+    }
+
+    // ✅ Valid file
+    handleImageFile(files[0]);
+  };
+  const handleFileInputChange = (e) => {
+    const files = e.target?.files;
+
+    if (!files) {
+      console.log("TC17: files is null");
+      return;
+    }
+
+    if (files.length === 0 || !files[0]) {
+      console.log("TC16: empty file list");
+      return;
+    }
+
+    handleImageFile(files[0]);
+  };
+  const testEmptyDrop = () => {
+    // Get the drop box element
+    const imageDropBox = document.querySelector(".image-drop-box");
+    
+    // Create a fake drop event with empty DataTransfer
+    const dropEvent = new DragEvent("drop", {
+      dataTransfer: new DataTransfer() // empty FileList
+    });
+
+    // Dispatch the event
+    imageDropBox.dispatchEvent(dropEvent);
+  };
+
 
   return (
     <div className="add-page">
@@ -157,13 +211,15 @@ const AddMedicine = () => {
                 className="image-drop-box"
                 onClick={() => fileInputRef.current.click()}
                 onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    handleImageFile(e.dataTransfer.files[0]);
-                  }
-                }}
+                // onDrop={(e) => {
+                //   e.preventDefault();
+                //   if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                //     handleImageFile(e.dataTransfer.files[0]);
+                //   }
+                // }}
+                onDrop ={handleDrop}
               >
+
                 {formData.imagePreview ? (
                   <img
                     src={formData.imagePreview}
@@ -173,14 +229,13 @@ const AddMedicine = () => {
                 ) : (
                   <p>Drag & Drop or Click to Upload</p>
                 )}
+          
                 <input
                   type="file"
                   accept="image/*"
                   style={{ display: "none" }}
                   ref={fileInputRef}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) handleImageFile(e.target.files[0]);
-                  }}
+                  onChange={handleFileInputChange}
                 />
               </div>
             </div>
@@ -224,10 +279,12 @@ const AddMedicine = () => {
               <p><strong>{recentlyAdded.name}</strong></p>
               <p>{recentlyAdded.brand}</p>
               <p>USD {recentlyAdded.price}</p>
-              <p>{recentlyAdded.req_prescription ? "Prescription Required" : "No Prescription"}</p>
+              <p style={{ color: recentlyAdded.req_prescription ? "red" : "green" }}>
+                {recentlyAdded.req_prescription ? "Prescription Required" : "No Prescription"}
+              </p>
               {recentlyAdded.image && (
                 <img
-                  src={`http://localhost:5000${recentlyAdded.image}`}
+                  src={`http://localhost:5000/images/medicines/${recentlyAdded.image}`}
                   alt={recentlyAdded.name}
                   style={{ width: "120px", height: "120px", objectFit: "contain", marginTop: "10px" }}
                 />

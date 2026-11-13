@@ -19,25 +19,39 @@ export default function WorkWithSehatly() {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+ 
 
-  const handleRoleSelect = (selectedRole) => setRole(selectedRole);
+  const handleRoleSelect = (selectedRole) => {
+    console.log("=== Role Selected ===");
+    console.log("Selected Role:", selectedRole);
+    if (selectedRole === "vendor") {
+      console.log("Vendor path activated (D01-T)");
+    }
+    setRole(selectedRole);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    console.log("Field Updated:", name, "=", type === "checkbox" ? checked : value);
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("=== Form Submitted (TC05) ===");
+
+  
     setSuccess(false); // hide previous success
     setLoading(true);
-
+    
     const minLoadingTime = 1500; // overlay minimum visible duration
     const startTime = Date.now();
 
     try {
       let response;
       if (role === "vendor") {
+        
+
         response = await axios.post("http://localhost:5000/api/vendor/request", {
           name: form.name,
           email: form.email,
@@ -48,6 +62,7 @@ export default function WorkWithSehatly() {
           website: form.website,
           message: form.message,
         });
+
       } else if (role === "donor") {
         response = await axios.post("http://localhost:5000/api/donations", {
           name: form.name,
@@ -60,10 +75,17 @@ export default function WorkWithSehatly() {
       }
 
       if (response.data.success) {
+       
+       console.log("=== API SUCCESS RECEIVED (TC06) ===");
         setSuccess(true); // show success
-        setTimeout(() => setSuccess(false), 3000); // hide after 3s
-      }
+        console.log("Success state set to TRUE → overlay should appear (D09-T)");
 
+        setTimeout(() => {
+          setSuccess(false);
+          console.log("Success overlay hidden after 3 seconds");
+        }, 3000);
+      }
+   
       // reset form
       setForm({
         name: "",
@@ -79,34 +101,46 @@ export default function WorkWithSehatly() {
       });
       setRole("");
     } catch (err) {
+      
       console.error(err);
       alert(err.response?.data?.message || "Something went wrong!");
     } finally {
+      
       const elapsed = Date.now() - startTime;
       const remainingTime = Math.max(minLoadingTime - elapsed, 0);
-      setTimeout(() => setLoading(false), remainingTime); // ensure overlay visible for minLoadingTime
+      console.log("Starting 3-second success overlay timer");
+      setTimeout(() => {
+        setLoading(false);
+        console.log("Success overlay hidden after 3 seconds");
+      }, remainingTime); // ensure overlay visible for minLoadingTime
     }
   };
-
+ 
   return (
     <div className="work-page">
       {/* Loading Overlay */}
       {loading && (
-        <div className="loading-overlay">
-          <div className="loading-content">
-            <div className="loader"></div>
-            <p>Your request is processing...</p>
+        
+             
+          <div className="loading-overlay">
+            <div className="loading-content">
+              <div className="loader"></div>
+              <p>Your request is processing...</p>
+            </div>
           </div>
-        </div>
+        
       )}
 
       {/* Success Overlay */}
       {success && (
+        <>
+          {console.log("Success overlay is VISIBLE")} 
         <div className="success-overlay">
           <div className="success-content">
             ✔ Request submitted successfully!
           </div>
         </div>
+        </>
       )}
 
       {/* HERO */}
@@ -143,7 +177,7 @@ export default function WorkWithSehatly() {
           </button>
         </div>
       </motion.section>
-
+      {!role && console.log("Form NOT rendered (role is empty)")}
       {/* FORM */}
       {role && (
         <motion.section

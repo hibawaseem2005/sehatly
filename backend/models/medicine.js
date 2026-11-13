@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const medicineSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, unique: true },
   brand: { type: String, required: true },
   description: { type: String, required: true },
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: "Category", default: null },

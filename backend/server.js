@@ -180,7 +180,7 @@ app.use("/api/reminders", reminderRoutes);
 app.use("/api/stripe", webhookRoutes);
 app.use('/api/payments', verifySession);
 app.use("/api/incompatible", incompatibleRoutes);
-
+app.use("/uploads", express.static("uploads"));
 
 // ================== SOCKET.IO ================== //
 const PORT = process.env.PORT || 5000;
