@@ -24,13 +24,16 @@ import verifySession from "./routes/paymentRoutes.js";
 import incompatibleRoutes from "./routes/incompatible.js";
 dotenv.config();
 const app = express();
+
+// Allowed frontend origins: the deployed site (FRONTEND_URL) and local development
+const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:3000"].filter(Boolean);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ CORS setup to allow credentials from frontend
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -188,7 +191,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // frontend origin
+    origin: allowedOrigins, // frontend origins
     credentials: true,
   },
 });

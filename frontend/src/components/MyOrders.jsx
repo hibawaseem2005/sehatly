@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import "../designs/MyOrders.css"; // we'll create a separate CSS file
+import { API_URL } from "../config";
 
 export default function MyOrders() {
   const { token } = useContext(AuthContext);
@@ -10,7 +11,7 @@ export default function MyOrders() {
   useEffect(() => {
     if (!token) return;
 
-    fetch("http://localhost:5000/api/orders/my-orders", {
+    fetch(`${API_URL}/api/orders/my-orders`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())

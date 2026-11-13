@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import "../designs/VendorLogin.css"; // Teal-Blue gradient CSS
+import { API_URL } from "../config";
 
 export default function VendorLogin() {
   // Form state starts empty to avoid pre-filled values
@@ -20,7 +21,7 @@ export default function VendorLogin() {
     setLoading(true);
     try {
       const { email, password } = form;
-      const res = await axios.post("http://localhost:5000/api/vendor/login", { email, password });
+      const res = await axios.post(`${API_URL}/api/vendor/login`, { email, password });
 
       if (res.data.success) {
         localStorage.setItem("vendorToken", res.data.token);

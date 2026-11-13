@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import "../designs/WorkWithSehatly.css";
 import axios from "axios";
+import { API_URL } from "../config";
 
 export default function WorkWithSehatly() {
   const [role, setRole] = useState("");
@@ -52,7 +53,7 @@ export default function WorkWithSehatly() {
       if (role === "vendor") {
         
 
-        response = await axios.post("http://localhost:5000/api/vendor/request", {
+        response = await axios.post(`${API_URL}/api/vendor/request`, {
           name: form.name,
           email: form.email,
           phone: form.phone,
@@ -64,7 +65,7 @@ export default function WorkWithSehatly() {
         });
 
       } else if (role === "donor") {
-        response = await axios.post("http://localhost:5000/api/donations", {
+        response = await axios.post(`${API_URL}/api/donations`, {
           name: form.name,
           email: form.email,
           phone: form.phone,

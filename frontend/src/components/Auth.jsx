@@ -4,6 +4,7 @@ import axios from "axios";
 import "../designs/Auth.css";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,7 +40,7 @@ const Auth = () => {
     e.preventDefault();
     setMessage("");
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${API_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -68,7 +69,7 @@ const Auth = () => {
     e.preventDefault();
     setMessage("");
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
+      const res = await axios.post(`${API_URL}/api/auth/login`, {
         email: loginEmail,
         password: loginPassword,
       });

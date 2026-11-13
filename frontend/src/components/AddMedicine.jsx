@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Plus, ChevronDown } from "lucide-react";
 import "../designs/AddMedicine.css";
+import { API_URL } from "../config";
 
 const AddMedicine = () => {
   const categories = {
@@ -78,7 +79,7 @@ const AddMedicine = () => {
       form.append("req_prescription", formData.req_prescription);
       if (formData.imageFile) form.append("image", formData.imageFile);
 
-      const res = await fetch("http://localhost:5000/api/medicines/add", {
+      const res = await fetch(`${API_URL}/api/medicines/add`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: form,
@@ -284,7 +285,7 @@ const AddMedicine = () => {
               </p>
               {recentlyAdded.image && (
                 <img
-                  src={`http://localhost:5000/images/medicines/${recentlyAdded.image}`}
+                  src={`${API_URL}/images/medicines/${recentlyAdded.image}`}
                   alt={recentlyAdded.name}
                   style={{ width: "120px", height: "120px", objectFit: "contain", marginTop: "10px" }}
                 />

@@ -8,8 +8,9 @@ import AddAlertIcon from "@mui/icons-material/AddAlert";
 import SnoozeIcon from "@mui/icons-material/Snooze";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import MedicationIcon from "@mui/icons-material/Medication";
+import { API_URL } from "../config";
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:5000/api";
+const API_BASE = `${API_URL}/api`;
 
 const Notifications = () => {
   const [medicine, setMedicine] = useState("");

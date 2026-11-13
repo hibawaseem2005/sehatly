@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
+import { API_URL } from "./config";
 
 
 const MedicinesList = () => {
@@ -48,7 +49,7 @@ const MedicinesList = () => {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const res = await fetch("http://localhost:5000/medicines");
+        const res = await fetch(`${API_URL}/medicines`);
         const data = await res.json();
         const medicinesWithImages = data.map((med) => ({
           ...med,
@@ -217,7 +218,7 @@ const MedicinesList = () => {
           <div className="products-grid">
            {currentItems.map((med) => (
               <article key={med._id || med.id} className="product-card">
-                <img src={`http://localhost:5000/${med.image}`} alt={med.name} />
+                <img src={`${API_URL}/${med.image}`} alt={med.name} />
 
                 <div className="card-body">
                   <h4>{med.name}</h4>

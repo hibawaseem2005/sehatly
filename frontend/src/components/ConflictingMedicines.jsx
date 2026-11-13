@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../designs/ConflictingMedicines.css";
+import { API_URL } from "../config";
 
 export default function ConflictingMedicines() {
   const [medicines, setMedicines] = useState([]);
@@ -19,12 +20,12 @@ export default function ConflictingMedicines() {
       setLoading(true);
 
       const medRes = await axios.get(
-        "http://localhost:5000/api/medicines/admin",
+        `${API_URL}/api/medicines/admin`,
         { headers: { Authorization: `Bearer ${adminToken}` }, withCredentials: true }
       );
 
       const conflictRes = await axios.get(
-        "http://localhost:5000/api/incompatible/all",
+        `${API_URL}/api/incompatible/all`,
         { headers: { Authorization: `Bearer ${adminToken}` }, withCredentials: true }
       );
 
@@ -49,7 +50,7 @@ export default function ConflictingMedicines() {
     try {
       setAdding(true);
       await axios.post(
-        "http://localhost:5000/api/incompatible/add",
+        `${API_URL}/api/incompatible/add`,
         { drugA: selectedA, drugB: selectedB },
         { headers: { Authorization: `Bearer ${adminToken}` }, withCredentials: true }
       );

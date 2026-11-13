@@ -19,6 +19,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { API_URL } from "../config";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -57,7 +58,7 @@ export default function AdminDashboard() {
 
     const promises = urls.map((u) =>
       axios
-        .get(`http://localhost:5000/api/admin/${u}`, {
+        .get(`${API_URL}/api/admin/${u}`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${adminToken}` },
         })
@@ -351,7 +352,7 @@ export default function AdminDashboard() {
     useEffect(() => {
       const fetchVendors = async () => {
         try {
-          const res = await fetch("http://localhost:5000/api/vendor/vendors", {
+          const res = await fetch(`${API_URL}/api/vendor/vendors`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${adminToken}`
@@ -408,7 +409,7 @@ export default function AdminDashboard() {
       const fetchRequests = async () => {
         setLoading(true);
         try {
-          const res = await axios.get("http://localhost:5000/api/vendor/requests", {
+          const res = await axios.get(`${API_URL}/api/vendor/requests`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${adminToken}`
@@ -429,7 +430,7 @@ export default function AdminDashboard() {
       const handleApprove = async (reqId) => {
       try {
         await axios.post(
-          `http://localhost:5000/api/vendor/approve/${reqId}`,
+          `${API_URL}/api/vendor/approve/${reqId}`,
           {}, // POST body
           {
             headers: {
@@ -449,7 +450,7 @@ export default function AdminDashboard() {
     const handleReject = async (reqId) => {
       try {
         await axios.post(
-          `http://localhost:5000/api/vendor/reject/${reqId}`,
+          `${API_URL}/api/vendor/reject/${reqId}`,
           {}, // POST body (empty)
           {
             headers: {

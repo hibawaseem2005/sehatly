@@ -2,6 +2,7 @@ import React, { useContext, useState, useRef } from "react";
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 import "../designs/cart1.css";
+import { API_URL } from "../config";
 
 export default function Cart() {
   // expected from CartContext: cart (array), removeFromCart(id), totalPrice (number), clearCart(), updateQuantity(id, qty)
@@ -121,7 +122,7 @@ const handleCheckout = async () => {
   // 4️⃣ Medicine interaction check
   try {
     const interactionRes = await fetch(
-      "http://localhost:5000/api/incompatible/check",
+      `${API_URL}/api/incompatible/check`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -192,7 +193,7 @@ const placeOrder = async () => {
   try {
     if (paymentMethod === "card") {
       const res = await fetch(
-        "http://localhost:5000/api/payments/create-payment",
+        `${API_URL}/api/payments/create-payment`,
         {
           method: "POST",
           headers: {
@@ -213,7 +214,7 @@ const placeOrder = async () => {
         console.log("Checkout failed: card payment error");
       }
     } else {
-      const res = await fetch("http://localhost:5000/api/orders/cod", {
+      const res = await fetch(`${API_URL}/api/orders/cod`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -280,7 +281,7 @@ const placeOrder = async () => {
                 {cart.map((item) => (
                   <div key={item._id} className="med-card">
                     <img
-                      src={`http://localhost:5000/${item.image}`}
+                      src={`${API_URL}/${item.image}`}
                       alt={item.name}
                       className="med-thumb"
                     />

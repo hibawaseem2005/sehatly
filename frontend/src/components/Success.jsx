@@ -3,6 +3,7 @@ import { Box, Typography, Paper, Button } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
+import { API_URL } from "../config";
 
 export default function Success() {
   const location = useLocation();
@@ -17,7 +18,7 @@ export default function Success() {
     if (!session_id) return;
 
     // Verify payment with backend
-    fetch(`http://localhost:5000/api/payments/verify-session`, {
+    fetch(`${API_URL}/api/payments/verify-session`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id }),
